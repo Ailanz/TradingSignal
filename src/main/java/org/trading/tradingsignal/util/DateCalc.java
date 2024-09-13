@@ -1,4 +1,4 @@
-package org.trading.tradingsignal.pojo.util;
+package org.trading.tradingsignal.util;
 
 import org.springframework.stereotype.Component;
 

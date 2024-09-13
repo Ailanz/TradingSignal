@@ -1,9 +1,8 @@
-package org.trading.tradingsignal.pojo.stock;
+package org.trading.tradingsignal.stock;
 
 import lombok.Data;
 import org.trading.tradingsignal.pojo.yahoo.Meta;
 import org.trading.tradingsignal.pojo.yahoo.Quote;
-import org.trading.tradingsignal.pojo.yahoo.Result;
 import org.trading.tradingsignal.pojo.yahoo.StockPrice;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package org.trading.tradingsignal.pojo.stock;
+package org.trading.tradingsignal.stock;
 
 import lombok.Data;
 

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.trading.tradingsignal.pojo.stock.StockConfigBuilder;
-import org.trading.tradingsignal.pojo.stock.StockData;
+import org.trading.tradingsignal.stock.StockConfigBuilder;
+import org.trading.tradingsignal.stock.StockData;
 import org.trading.tradingsignal.pojo.yahoo.StockPrice;
 
 import java.io.IOException;
