@@ -3,21 +3,22 @@ package indicator;
 import org.trading.tradingsignal.stock.StockData;
 import org.trading.tradingsignal.stock.DatePrice;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExponentialMovingAverage implements TechnicalIndicator {
+public class ExponentialMovingAverageIndicator implements TechnicalIndicator {
 
     private final int period;
 
-    public ExponentialMovingAverage(int period) {
+    public ExponentialMovingAverageIndicator(int period) {
         this.period = period;
     }
 
     @Override
-    public List<Double> calculate(StockData stockData) {
+    public List<AbstractMap.SimpleEntry<Long, Double>> calculate(StockData stockData) {
         List<DatePrice> datePrices = stockData.getDatePrices();
-        List<Double> emaValues = new ArrayList<>();
+        List<AbstractMap.SimpleEntry<Long, Double>> emaValues = new ArrayList<>();
 
         if (datePrices == null || datePrices.size() < period) {
             return emaValues; // Not enough data to calculate EMA
@@ -31,13 +32,13 @@ public class ExponentialMovingAverage implements TechnicalIndicator {
             ema += datePrices.get(i).getClose();
         }
         ema /= period;
-        emaValues.add(ema);
+        emaValues.add(new AbstractMap.SimpleEntry<>(datePrices.get(period - 1).getTimestamp().longValue(), ema));
 
         // Calculate the EMA for the rest of the values
         for (int i = period; i < datePrices.size(); i++) {
             double closePrice = datePrices.get(i).getClose();
             ema = ((closePrice - ema) * multiplier) + ema;
-            emaValues.add(ema);
+            emaValues.add(new AbstractMap.SimpleEntry<>(datePrices.get(i).getTimestamp().longValue(), ema));
         }
 
         return emaValues;

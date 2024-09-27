@@ -1,33 +1,36 @@
 package indicator;
 
+import lombok.Data;
 import org.trading.tradingsignal.stock.DatePrice;
 import org.trading.tradingsignal.stock.StockData;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimpleMovingAverage implements TechnicalIndicator {
+@Data
+public class SimpleMovingAverageIndicator implements TechnicalIndicator {
     private int period;
 
-    public SimpleMovingAverage(int period) {
+    public SimpleMovingAverageIndicator(int period) {
         this.period = period;
     }
 
     @Override
-    public List<Double> calculate(StockData stockData) {
+    public List<AbstractMap.SimpleEntry<Long, Double>> calculate(StockData stockData) {
         List<DatePrice> datePrices = stockData.getDatePrices();
-        List<Double> smaValues = new ArrayList<>();
+        List<AbstractMap.SimpleEntry<Long, Double>> smaValues = new ArrayList<>();
 
         for (int i = 0; i <= datePrices.size() - period; i++) {
             double sum = 0.0;
             for (int j = i; j < i + period; j++) {
                 sum += datePrices.get(j).getClose();
             }
-            smaValues.add(sum / period);
+            double sma = sum / period;
+            Long timestamp = datePrices.get(i + period - 1).getTimestamp().longValue();
+            smaValues.add(new AbstractMap.SimpleEntry<>(timestamp, sma));
         }
 
         return smaValues;
     }
-
-
 }
