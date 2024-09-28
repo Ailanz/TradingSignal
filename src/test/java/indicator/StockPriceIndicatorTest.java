@@ -4,8 +4,9 @@ package indicator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import org.trading.tradingsignal.stock.DatePrice;
-import org.trading.tradingsignal.stock.StockData;
+import org.tradingsignal.indicator.StockPriceIndicator;
+import org.tradingsignal.stock.DatePrice;
+import org.tradingsignal.stock.StockData;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
