@@ -4,7 +4,7 @@ package indicator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
-import org.tradingsignal.indicator.StockPriceIndicator;
+import org.tradingsignal.strategy.indicator.StockPriceIndicator;
 import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockData;
 

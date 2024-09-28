@@ -2,7 +2,7 @@
   {
     "name": "strategy1",
     "description": "Strategy 1 description",
-    "condition": {
+    "operation": {
       "type": "AND",
       "conditions": [
         {

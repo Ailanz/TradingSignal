@@ -1,4 +1,4 @@
-package org.tradingsignal.indicator;
+package org.tradingsignal.strategy.indicator;
 
 import lombok.Data;
 import org.tradingsignal.stock.DatePrice;

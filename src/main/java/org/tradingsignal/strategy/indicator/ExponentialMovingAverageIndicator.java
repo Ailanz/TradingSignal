@@ -1,4 +1,4 @@
-package org.tradingsignal.indicator;
+package org.tradingsignal.strategy.indicator;
 
 import org.tradingsignal.stock.StockData;
 import org.tradingsignal.stock.DatePrice;
