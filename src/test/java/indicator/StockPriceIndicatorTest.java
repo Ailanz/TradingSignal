@@ -23,7 +23,7 @@ public class StockPriceIndicatorTest {
         List<DatePrice> datePrices = new ArrayList<>();
 
         DatePrice datePrice1 = new DatePrice();
-        datePrice1.setTimestamp(1622505600);
+        datePrice1.setTimestamp(1622505600L);
         datePrice1.setOpen(100.0);
         datePrice1.setHigh(110.0);
         datePrice1.setLow(90.0);
@@ -31,7 +31,7 @@ public class StockPriceIndicatorTest {
         datePrices.add(datePrice1);
 
         DatePrice datePrice2 = new DatePrice();
-        datePrice2.setTimestamp(1622592000);
+        datePrice2.setTimestamp(1622592000L);
         datePrice2.setOpen(105.0);
         datePrice2.setHigh(115.0);
         datePrice2.setLow(95.0);

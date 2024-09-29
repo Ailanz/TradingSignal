@@ -8,6 +8,8 @@ public class DateCalc {
     }
 
     public static long now() {
-        return System.currentTimeMillis() / 1000;
+        //beginning of day
+        return (System.currentTimeMillis()/1000) - (System.currentTimeMillis()/1000) % (24 * 60 * 60);
+//        return System.currentTimeMillis() / 1000;
     }
 }

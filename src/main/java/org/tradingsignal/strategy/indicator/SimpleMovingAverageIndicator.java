@@ -27,7 +27,7 @@ public class SimpleMovingAverageIndicator implements TechnicalIndicator {
                 sum += datePrices.get(j).getClose();
             }
             double sma = sum / period;
-            Long timestamp = datePrices.get(i + period - 1).getTimestamp().longValue();
+            Long timestamp = datePrices.get(i + period - 1).getTimestamp();
             smaValues.add(new AbstractMap.SimpleEntry<>(timestamp, sma));
         }
 

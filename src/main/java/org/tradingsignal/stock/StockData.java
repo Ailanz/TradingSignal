@@ -24,7 +24,7 @@ public class StockData {
         stockData.setRegularMarketPrice(meta.getRegularMarketPrice());
 
         List<DatePrice> datePrices = new ArrayList<>();
-        List<Integer> timestamps = stockPrice.getChart().getResult().get(0).getTimestamp();
+        List<Long> timestamps = stockPrice.getChart().getResult().get(0).getTimestamp();
         Quote quote = stockPrice.getChart().getResult().get(0).getIndicators().getQuote().get(0);
 
         for (int i = 0; i < timestamps.size(); i++) {
@@ -41,5 +41,11 @@ public class StockData {
         return stockData;
     }
 
+    public DatePrice getLatestPrice() {
+        if (datePrices == null || datePrices.isEmpty()) {
+            return null;
+        }
+        return datePrices.get(datePrices.size() - 1);
+    }
 // getters and setters
 }

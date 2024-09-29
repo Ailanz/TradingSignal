@@ -2,29 +2,27 @@
   {
     "name": "strategy1",
     "description": "Strategy 1 description",
-    "operation": {
-      "type": "AND",
-      "conditions": [
-        {
-          "indicator": {
-            "type": "SimpleMovingAverage",
-            "period": 200,
-            "underlying": "SPY"
-          },
-          "type": "LESS_THAN",
-          "value": 200
+    "operation": "AND",
+    "conditions": [
+      {
+        "indicator": {
+          "type": "SimpleMovingAverage",
+          "period": 200,
+          "underlying": "SPY"
         },
-        {
-          "indicator": {
-            "type": "SimpleMovingAverage",
-            "period": 200,
-            "underlying": "SPY"
-          },
-          "type": "LESS_THAN",
-          "value": 200
-        }
-      ]
-    },
+        "type": "LESS_THAN",
+        "value": 200
+      },
+      {
+        "indicator": {
+          "type": "SimpleMovingAverage",
+          "period": 200,
+          "underlying": "SPY"
+        },
+        "type": "LESS_THAN",
+        "value": 200
+      }
+    ],
     "actions": [
       {
         "type": "SET",

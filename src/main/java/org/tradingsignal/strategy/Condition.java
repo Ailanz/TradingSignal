@@ -1,4 +1,4 @@
-package org.tradingsignal.strategy.operation;
+package org.tradingsignal.strategy;
 
 import lombok.Data;
 import org.tradingsignal.pojo.yahoo.StockPrice;
@@ -24,11 +24,14 @@ public class Condition {
     private List<AbstractMap.SimpleEntry<Long, Double>> indicatorValues;
     private Double value;
 
+    private StockData stockData;
+
     public Condition(ConditionType conditionType, TechnicalIndicator technicalIndicator, StockData stockData, Double value) {
         this.conditionType = conditionType;
         this.technicalIndicator = technicalIndicator;
-        indicatorValues = technicalIndicator.calculate(stockData);
+        this.indicatorValues = technicalIndicator.calculate(stockData);
         this.value = value;
+        this.stockData = stockData;
     }
 
     public boolean isMet(Long timestamp) {
@@ -77,6 +80,10 @@ public class Condition {
             }
         }
         return value;
+    }
+
+    public String getSymbol() {
+        return stockData.getSymbol().toUpperCase();
     }
 
 }

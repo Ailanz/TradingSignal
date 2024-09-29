@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.tradingsignal.stock.StockData;
+import org.tradingsignal.strategy.Condition;
 import org.tradingsignal.strategy.indicator.TechnicalIndicator;
 
 import java.util.AbstractMap;
