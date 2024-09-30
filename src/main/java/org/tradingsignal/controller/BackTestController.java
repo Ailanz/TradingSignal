@@ -37,7 +37,7 @@ public class BackTestController {
 
         List<Asset> assets = new LinkedList();
         assets.add(new Asset(Asset.CASH, 1, 10000));
-        Portfolio portfolio = new Portfolio(assets);
+        Portfolio portfolio = new Portfolio(10000);
 
         StockData spyStockData = stockDataService.getStockPrice("SPY");
 
@@ -50,6 +50,6 @@ public class BackTestController {
                 .build();
 
         strategyExecutorService.executeStrategy(strategyBuilder, portfolio, actionLog, DateCalc.daysBefore(365), DateCalc.now());
-        return actionLog.getActionLog().stream().map(action -> action.getKey() + " : " + action.getValue()).toList();
+        return actionLog.getActionLog().stream().map(action -> DateCalc.toDateString(action.getKey()) + " : " + action.getValue()).toList();
     }
 }

@@ -36,17 +36,12 @@ public class Asset {
     }
 
     public double getValue(StockDataService stockDataService, Long timestamp) {
+        if (this.getSymbol().equals(CASH)) {
+            return quantity;
+        }
+
         StockData stockData = stockDataService.getStockPrice(symbol);
-        List<DatePrice> datePrices = stockData.getDatePrices();
-        DatePrice targetDatePrice = null;
-        for (DatePrice dp : datePrices) {
-            if (dp.getTimestamp() <= timestamp) {
-                targetDatePrice = dp;
-            }
-        }
-        if (targetDatePrice == null) {
-            throw new IllegalArgumentException("No data available for timestamp " + timestamp);
-        }
+        DatePrice targetDatePrice = StockDataService.findDatePrice(timestamp, stockData);
         return targetDatePrice.getClose() * quantity;
     }
 

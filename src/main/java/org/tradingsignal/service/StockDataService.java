@@ -14,6 +14,7 @@ import org.tradingsignal.util.DateCalc;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 
 @Log4j2
 @Service
@@ -63,6 +64,25 @@ public class StockDataService {
                 .interval(StockConfigBuilder.Interval.ONE_DAY)
                 .build());
         return stockData.getLatestPrice();
+    }
+
+    public DatePrice getStockPriceAtTime(String symbol, Long timestamp) {
+        StockData stockData = getStockPrice(symbol);
+        return findDatePrice(timestamp, stockData);
+    }
+
+    public static DatePrice findDatePrice(Long timestamp, StockData stockData) {
+        List<DatePrice> datePrices = stockData.getDatePrices();
+        DatePrice result = null;
+        for (DatePrice datePrice : datePrices) {
+           if (datePrice.getTimestamp() <= timestamp) {
+               result = datePrice;
+           }
+        }
+        if (result == null) {
+            throw new IllegalArgumentException("No data available for timestamp " + timestamp);
+        }
+        return result;
     }
 
 }

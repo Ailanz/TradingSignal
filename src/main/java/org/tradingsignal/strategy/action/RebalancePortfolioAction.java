@@ -11,6 +11,7 @@ import org.tradingsignal.strategy.portfolio.Portfolio;
 
 import javax.swing.*;
 import java.util.HashMap;
+import java.util.Map;
 
 @Data
 public class RebalancePortfolioAction implements StrategyAction {
@@ -36,39 +37,16 @@ public class RebalancePortfolioAction implements StrategyAction {
             throw new RuntimeException("Total weight must be 100");
         }
 
-        double totalPortfolioValue = 0;
-        HashMap<String, Double> currentValues = new HashMap<>();
-        for (Asset asset : portfolio.getAssets()) {
-            double latestPrice = asset.getSymbol().equals(Asset.CASH) ? 1 : stockDataService.getLatestStockPrice(asset.getSymbol()).getClose();
-            double currentValue = asset.getQuantity() * latestPrice;
-            totalPortfolioValue += currentValue;
-            currentValues.put(asset.getSymbol(), currentValue);
+        portfolio.sellAll(timestamp);
+        double totalPortfolioValue = portfolio.getPortfolioValue(timestamp);
+        for (Map.Entry<String, Double> entry : targetWeights.entrySet()) {
+            String symbol = entry.getKey();
+            double targetWeight = entry.getValue();
+            double targetValue = totalPortfolioValue * targetWeight / 100;
+            double currentSharePrice = stockDataService.getStockPriceAtTime(symbol, timestamp).getClose();
+            double numShares = targetValue /currentSharePrice;
+            portfolio.buy(symbol, currentSharePrice, numShares);
         }
-
-
-        // Adjust portfolio based on target weights
-        for (String symbol : targetWeights.keySet()) {
-            double targetWeight = targetWeights.get(symbol);
-            double targetValue = totalPortfolioValue * (targetWeight / 100);
-            double latestPrice = symbol.equals(Asset.CASH) ? 1 : stockDataService.getLatestStockPrice(symbol).getClose();
-            double targetQuantity = targetValue / latestPrice;
-
-            // Find the asset in the portfolio and update its quantity
-            boolean assetFound = false;
-            for (Asset asset : portfolio.getAssets()) {
-                if (asset.getSymbol().equals(symbol)) {
-                    asset.setQuantity(targetQuantity);
-                    assetFound = true;
-                    break;
-                }
-            }
-
-            // If the asset is not found in the portfolio, add it
-            if (!assetFound) {
-                portfolio.getAssets().add(new Asset(symbol, 0, targetQuantity));
-            }
-        }
-
 
         actionLog.addAction(timestamp, "Rebalanced portfolio value " + portfolio.getPortfolioValue(timestamp) + " to target weights " + targetWeights.toString());
         return portfolio;
