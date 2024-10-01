@@ -11,9 +11,7 @@ import java.util.List;
 public class StrategyBuilder {
     private String name;
     private String description;
-    private Operation operation;
-    private List<Condition> conditions;
-    private StrategyAction action;
+    private List<SubStrategy> subStrategies;
     private int priority;
     private boolean enabled;
     private String createdBy;
@@ -22,15 +20,8 @@ public class StrategyBuilder {
     private Long lastModifiedDate;
     private int version;
 
-    public enum Operation {
-        AND, OR
-    }
 
     public StrategyBuilder build() {
-
-        if (operation == null) {
-            throw new InvalidStrategyException("Operation is required");
-        }
 
         if (this.createdDate == null) {
             this.createdDate = System.currentTimeMillis();

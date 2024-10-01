@@ -10,6 +10,7 @@ import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockConfigBuilder;
 import org.tradingsignal.stock.StockData;
 import org.tradingsignal.pojo.yahoo.StockPrice;
+import org.tradingsignal.strategy.portfolio.Asset;
 import org.tradingsignal.util.DateCalc;
 
 import java.io.IOException;
@@ -67,6 +68,9 @@ public class StockDataService {
     }
 
     public DatePrice getStockPriceAtTime(String symbol, Long timestamp) {
+        if (Asset.CASH.equals(symbol)) {
+            return new DatePrice(timestamp, 1d, 1d, 1d, 1d);
+        }
         StockData stockData = getStockPrice(symbol);
         return findDatePrice(timestamp, stockData);
     }

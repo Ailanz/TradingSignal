@@ -6,6 +6,7 @@ import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockData;
 import org.tradingsignal.strategy.Condition;
 import org.tradingsignal.strategy.StrategyBuilder;
+import org.tradingsignal.strategy.SubStrategy;
 import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 
@@ -25,13 +26,15 @@ public class StrategyExecutorService {
         if (portfolio == null) {
             throw new IllegalArgumentException("Portfolio cannot be null");
         }
-
         //TODO: ERROR timestamp may not match up
         List<Long> allTimestamps = new LinkedList<>();
-        for(Condition condition : strategy.getConditions()) {
-            String symbol = condition.getSymbol();
-            StockData stockData = stockDataService.getStockPrice(symbol);
-            allTimestamps.addAll(stockData.getDatePrices().stream().map(DatePrice::getTimestamp).toList());
+
+        for (SubStrategy subStrategy : strategy.getSubStrategies()) {
+            for (Condition condition : subStrategy.getConditions()) {
+                String symbol = condition.getSymbol();
+                StockData stockData = stockDataService.getStockPrice(symbol);
+                allTimestamps.addAll(stockData.getDatePrices().stream().map(DatePrice::getTimestamp).toList());
+            }
         }
 
         //De Duplication
@@ -42,10 +45,13 @@ public class StrategyExecutorService {
                 continue;
             }
 
-            for (Condition condition : strategy.getConditions()) {
-                if (condition.isMet(timestamp)) {
-                    // Execute the action
-                    strategy.getAction().execute(portfolio, timestamp, actionLog);
+            for (SubStrategy subStrategy : strategy.getSubStrategies()) {
+
+                for (Condition condition : subStrategy.getConditions()) {
+                    if (condition.isMet(timestamp)) {
+                        // Execute the action
+                        subStrategy.getAction().execute(portfolio, timestamp, actionLog);
+                    }
                 }
             }
         }

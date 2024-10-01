@@ -44,6 +44,7 @@ public class RebalancePortfolioAction implements StrategyAction {
             double targetWeight = entry.getValue();
             double targetValue = totalPortfolioValue * targetWeight / 100;
             double currentSharePrice = stockDataService.getStockPriceAtTime(symbol, timestamp).getClose();
+            currentSharePrice = Math.floor(currentSharePrice * 100) / 100;
             double numShares = targetValue /currentSharePrice;
             portfolio.buy(symbol, currentSharePrice, numShares);
         }

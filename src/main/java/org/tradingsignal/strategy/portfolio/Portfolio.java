@@ -38,7 +38,7 @@ public class Portfolio {
         for (Asset asset : assets.values()) {
             portfolioValue += asset.getValue(stockDataService, timestamp);
         }
-        return portfolioValue;
+        return Math.floor(portfolioValue * 100) / 100;
     }
 
     public void sellAll(Long timestamp) {
@@ -52,8 +52,8 @@ public class Portfolio {
         assets.putIfAbsent(Asset.CASH, new Asset(Asset.CASH, 1, 0));
 
         //round price to 2 decimal places
-        price = Math.round(price * 100.0) / 100.0;
-        quantity = Math.round(quantity * 100.0) / 100.0;
+        price = Math.floor(price * 100.0) / 100.0;
+        quantity = Math.floor(quantity * 100.0) / 100.0;
         double totalValue = price * quantity;
         if (assets.get(Asset.CASH).getQuantity() < totalValue) {
             throw new IllegalArgumentException("Not enough cash to buy " + quantity + " of " + symbol);
