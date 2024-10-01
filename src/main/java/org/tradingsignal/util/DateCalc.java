@@ -8,9 +8,9 @@ public class DateCalc {
     }
 
     public static long now() {
-        //beginning of day
-        return (System.currentTimeMillis()/1000) - (System.currentTimeMillis()/1000) % (24 * 60 * 60);
-//        return System.currentTimeMillis() / 1000;
+        //beginning of next day
+        return (System.currentTimeMillis() / 1000) + 24 * 60 * 60;
+        //        return System.currentTimeMillis() / 1000;
     }
 
     public static String toDateString(long timestamp) {

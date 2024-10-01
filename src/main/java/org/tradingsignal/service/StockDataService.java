@@ -21,7 +21,7 @@ import java.util.List;
 @Service
 public class StockDataService {
 
-    private static HashMap<String, StockData> stockDataCache = new HashMap<>();
+    private static final HashMap<String, StockData> stockDataCache = new HashMap<>();
 
     public StockData getStockPrice(String symbol) {
         return getStockPrice(

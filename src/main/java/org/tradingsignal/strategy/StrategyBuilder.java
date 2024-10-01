@@ -2,6 +2,7 @@ package org.tradingsignal.strategy;
 
 import lombok.Builder;
 import lombok.Data;
+import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.action.StrategyAction;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class StrategyBuilder {
     private String lastModifiedBy;
     private Long lastModifiedDate;
     private int version;
+    private ActionLog actionLog;
 
 
     public StrategyBuilder build() {

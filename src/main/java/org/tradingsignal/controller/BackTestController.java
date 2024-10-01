@@ -40,6 +40,44 @@ public class BackTestController {
         assets.add(new Asset(Asset.CASH, 1, 10000));
         Portfolio portfolio = new Portfolio(10000);
 
+        String symbol = "UPRO";
+        StockData spyStockData = stockDataService.getStockPrice(symbol);
+
+        StrategyBuilder strategyBuilder = StrategyBuilder.builder()
+                .name("Simple Moving Average")
+                .description("Buy when the short-term moving average crosses above the long-term moving average")
+                .actionLog(actionLog)
+                .subStrategies(List.of(
+                        new SubStrategy(
+                                SubStrategy.Operation.AND,
+                                List.of(
+                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new SimpleMovingAverageIndicator(200), spyStockData, Condition.ValueType.CURRENT_PRICE)
+                                ),
+                                new RebalancePortfolioAction().addWeight(symbol, 100d)
+                        ),
+                        new SubStrategy(
+                                SubStrategy.Operation.AND,
+                                List.of(
+                                        new Condition(Condition.ConditionType.LESS, new SimpleMovingAverageIndicator(200), spyStockData, Condition.ValueType.CURRENT_PRICE)
+                                ),
+                                new RebalancePortfolioAction().addWeight(Asset.CASH, 100d)
+                        )))
+                .build();
+
+        strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(366 * 5), DateCalc.now());
+        actionLog.addAction(DateCalc.now(), "Final portfolio value: " + portfolio.getPortfolioValue(DateCalc.now()));
+        return actionLog.getActionLog().stream().map(action -> DateCalc.toDateString(action.getKey()) + " : " + action.getValue()).toList();
+    }
+
+    @GetMapping("/spy")
+
+    public List<String> allSPY() {
+        ActionLog actionLog = new ActionLog();
+
+        List<Asset> assets = new LinkedList();
+        assets.add(new Asset(Asset.CASH, 1, 10000));
+        Portfolio portfolio = new Portfolio(10000);
+
         StockData spyStockData = stockDataService.getStockPrice("SPY");
 
         StrategyBuilder strategyBuilder = StrategyBuilder.builder()
@@ -49,20 +87,13 @@ public class BackTestController {
                         new SubStrategy(
                                 SubStrategy.Operation.AND,
                                 List.of(
-                                        new Condition(Condition.ConditionType.CROSSOVER, new SimpleMovingAverageIndicator(10), spyStockData, 500d)
+                                        new Condition(Condition.ConditionType.LESS, new SimpleMovingAverageIndicator(10), spyStockData, 1d)
                                 ),
                                 new RebalancePortfolioAction().addWeight("SPY", 100d)
-                        ),
-                        new SubStrategy(
-                                SubStrategy.Operation.AND,
-                                List.of(
-                                        new Condition(Condition.ConditionType.CROSSUNDER, new SimpleMovingAverageIndicator(10), spyStockData, 500d)
-                                ),
-                                new RebalancePortfolioAction().addWeight(Asset.CASH, 100d)
                         )))
                 .build();
 
-        strategyExecutorService.executeStrategy(strategyBuilder, portfolio, actionLog, DateCalc.daysBefore(365), DateCalc.now());
+        strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(365), DateCalc.now());
         actionLog.addAction(DateCalc.now(), "Final portfolio value: " + portfolio.getPortfolioValue(DateCalc.now()));
         return actionLog.getActionLog().stream().map(action -> DateCalc.toDateString(action.getKey()) + " : " + action.getValue()).toList();
     }

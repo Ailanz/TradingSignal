@@ -19,7 +19,8 @@ public class StrategyExecutorService {
     @Autowired
     private StockDataService stockDataService;
 
-    public Portfolio executeStrategy(StrategyBuilder strategy, Portfolio portfolio, ActionLog actionLog, Long fromTimestamp, Long toTimestamp) {
+    public Portfolio executeStrategy(StrategyBuilder strategy, Portfolio portfolio, Long fromTimestamp, Long toTimestamp) {
+        ActionLog actionLog = strategy.getActionLog();
         if (strategy == null) {
             throw new IllegalArgumentException("Strategy cannot be null");
         }
@@ -48,7 +49,7 @@ public class StrategyExecutorService {
             for (SubStrategy subStrategy : strategy.getSubStrategies()) {
 
                 for (Condition condition : subStrategy.getConditions()) {
-                    if (condition.isMet(timestamp)) {
+                    if (condition.isMet(timestamp, actionLog)) {
                         // Execute the action
                         subStrategy.getAction().execute(portfolio, timestamp, actionLog);
                     }

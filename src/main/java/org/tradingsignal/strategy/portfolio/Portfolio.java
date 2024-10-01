@@ -20,8 +20,7 @@ public class Portfolio {
     }
 
     public Portfolio(double cash) {
-        this.stockDataService = new StockDataService();
-        this.assets = new HashMap<>();
+        this();
         this.assets.put(Asset.CASH, new Asset(Asset.CASH, 1, cash));
     }
 
@@ -54,7 +53,7 @@ public class Portfolio {
         //round price to 2 decimal places
         price = Math.floor(price * 100.0) / 100.0;
         quantity = Math.floor(quantity * 100.0) / 100.0;
-        double totalValue = price * quantity;
+        double totalValue = Math.floor(price * quantity * 100.0) / 100.0;
         if (assets.get(Asset.CASH).getQuantity() < totalValue) {
             throw new IllegalArgumentException("Not enough cash to buy " + quantity + " of " + symbol);
         }

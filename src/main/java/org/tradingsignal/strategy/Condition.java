@@ -2,7 +2,10 @@ package org.tradingsignal.strategy;
 
 import lombok.Data;
 import org.tradingsignal.pojo.yahoo.StockPrice;
+import org.tradingsignal.service.StockDataService;
+import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockData;
+import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.indicator.TechnicalIndicator;
 
 import java.util.AbstractMap;
@@ -11,65 +14,62 @@ import java.util.List;
 @Data
 public class Condition {
     public enum ConditionType {
-        CROSSOVER,
-        CROSSUNDER,
         GREATER,
         LESS,
         GREATER_OR_EQUAL,
         LESS_OR_EQUAL
     }
 
+    public enum ValueType {
+        CURRENT_PRICE,
+        CUSTOM_VALUE
+    }
+
     private ConditionType conditionType;
     private TechnicalIndicator technicalIndicator;
     private List<AbstractMap.SimpleEntry<Long, Double>> indicatorValues;
+    private ValueType valueType;
     private Double value;
 
     private StockData stockData;
 
     public Condition(ConditionType conditionType, TechnicalIndicator technicalIndicator, StockData stockData, Double value) {
+        this(conditionType, technicalIndicator, stockData, ValueType.CUSTOM_VALUE, value);
+    }
+
+    public Condition(ConditionType conditionType, TechnicalIndicator technicalIndicator, StockData stockData, ValueType valueType) {
+        this(conditionType, technicalIndicator, stockData, valueType, null);
+    }
+
+    public Condition(ConditionType conditionType, TechnicalIndicator technicalIndicator, StockData stockData, ValueType valueType, Double value) {
         this.conditionType = conditionType;
         this.technicalIndicator = technicalIndicator;
         this.indicatorValues = technicalIndicator.calculate(stockData);
+        this.valueType = valueType;
         this.value = value;
         this.stockData = stockData;
     }
 
-    public boolean isMet(Long timestamp) {
+    public boolean isMet(Long timestamp, ActionLog actionLog) {
         Double indicatorValue = getIndicatorValue(timestamp);
         if (indicatorValue == null) {
             return false;
         }
 
-        return switch (conditionType) {
-            case CROSSOVER -> isCrossed(ConditionType.CROSSOVER, timestamp);
-            case CROSSUNDER -> isCrossed(ConditionType.CROSSUNDER, timestamp);
-            case GREATER -> indicatorValue > value;
-            case LESS -> indicatorValue < value;
-            case GREATER_OR_EQUAL -> indicatorValue >= value;
-            case LESS_OR_EQUAL -> indicatorValue <= value;
+        double value = getValue(timestamp);
+        boolean isTrue = switch (conditionType) {
+            case GREATER -> value> indicatorValue;
+            case LESS -> value < indicatorValue;
+            case GREATER_OR_EQUAL -> value >= indicatorValue;
+            case LESS_OR_EQUAL -> value <= indicatorValue;
             default -> false;
         };
-    }
 
-    public boolean isCrossed(ConditionType conditionType, Long timestamp) {
-        Double value = null;
-        Double lastValue = null;
-        for (AbstractMap.SimpleEntry<Long, Double> entry : indicatorValues) {
-            if (value == null || entry.getKey() <= timestamp) {
-                lastValue = value;
-                value = entry.getValue();
-            }
+        if (isTrue) {
+            actionLog.addAction(timestamp, "Condition: " + conditionType + " " + " " + valueType + " : " + value  + ", " + technicalIndicator.getClass().getSimpleName() + " : " + indicatorValue);
         }
 
-        if (value == null || lastValue == null) {
-            return false;
-        }
-        if (conditionType == ConditionType.CROSSOVER) {
-            return lastValue < this.value && value >= this.value;
-        } else if (conditionType == ConditionType.CROSSUNDER) {
-            return lastValue > this.value && value <= this.value;
-        }
-        throw new RuntimeException("Invalid condition type");
+        return isTrue;
     }
 
     public Double getIndicatorValue(Long timestamp) {
@@ -80,6 +80,17 @@ public class Condition {
             }
         }
         return value;
+    }
+
+    public double getValue(Long timestamp) {
+        if (this.valueType == ValueType.CUSTOM_VALUE) {
+            return this.value;
+        }
+        if (this.valueType == ValueType.CURRENT_PRICE) {
+            DatePrice datePrice = StockDataService.findDatePrice(timestamp, stockData);
+            return datePrice.getClose();
+        }
+        throw new RuntimeException("Invalid value type");
     }
 
     public String getSymbol() {

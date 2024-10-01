@@ -18,7 +18,7 @@ public class RebalancePortfolioAction implements StrategyAction {
 
     private StockDataService stockDataService;
 
-    private HashMap<String, Double> targetWeights;
+    private Map<String, Double> targetWeights;
 
     public RebalancePortfolioAction() {
         targetWeights = new HashMap<>();
@@ -31,36 +31,57 @@ public class RebalancePortfolioAction implements StrategyAction {
     }
 
     @Override
-    public Portfolio execute(Portfolio portfolio, Long timestamp, ActionLog actionLog) {
-        //check total weight equals 100
-        if (!validateWeights()) {
-            throw new RuntimeException("Total weight must be 100");
-        }
+public Portfolio execute(Portfolio portfolio, Long timestamp, ActionLog actionLog) {
+    // Check total weight equals 100
+    if (!validateWeights()) {
+        throw new RuntimeException("Total weight must be 100");
+    }
 
-        portfolio.sellAll(timestamp);
-        double totalPortfolioValue = portfolio.getPortfolioValue(timestamp);
-        for (Map.Entry<String, Double> entry : targetWeights.entrySet()) {
-            String symbol = entry.getKey();
-            double targetWeight = entry.getValue();
-            double targetValue = totalPortfolioValue * targetWeight / 100;
-            double currentSharePrice = stockDataService.getStockPriceAtTime(symbol, timestamp).getClose();
-            currentSharePrice = Math.floor(currentSharePrice * 100) / 100;
-            double numShares = targetValue /currentSharePrice;
-            portfolio.buy(symbol, currentSharePrice, numShares);
-        }
+    // Calculate current weights
+    double totalPortfolioValue = portfolio.getPortfolioValue(timestamp);
+    Map<String, Double> currentWeights = new HashMap<>();
+    for (Map.Entry<String, Asset> entry : portfolio.getAssets().entrySet()) {
+        String symbol = entry.getKey();
+        Asset asset = entry.getValue();
+        double assetValue = asset.getValue(stockDataService, timestamp);
+        currentWeights.put(symbol, (assetValue / totalPortfolioValue) * 100);
+    }
 
-        actionLog.addAction(timestamp, "Rebalanced portfolio value " + portfolio.getPortfolioValue(timestamp) + " to target weights " + targetWeights.toString());
+    // Check if rebalancing is needed
+    boolean needsRebalancing = false;
+    for (Map.Entry<String, Double> entry : targetWeights.entrySet()) {
+        String symbol = entry.getKey();
+        double targetWeight = entry.getValue();
+        double currentWeight = currentWeights.getOrDefault(symbol, 0.0);
+        if (Math.abs(targetWeight - currentWeight) > 1.0) { // Allow a 1% tolerance
+            needsRebalancing = true;
+            break;
+        }
+    }
+
+    if (!needsRebalancing) {
+        actionLog.addAction(timestamp, "No rebalancing needed. Portfolio already close to target weights.");
         return portfolio;
     }
 
+    // Proceed with rebalancing
+    portfolio.sellAll(timestamp);
+    totalPortfolioValue = portfolio.getPortfolioValue(timestamp);
+    for (Map.Entry<String, Double> entry : targetWeights.entrySet()) {
+        String symbol = entry.getKey();
+        double targetWeight = entry.getValue();
+        double targetValue = totalPortfolioValue * targetWeight / 100;
+        double currentSharePrice = stockDataService.getStockPriceAtTime(symbol, timestamp).getClose();
+        currentSharePrice = Math.floor(currentSharePrice * 100) / 100;
+        double numShares = targetValue / currentSharePrice;
+        portfolio.buy(symbol, currentSharePrice, numShares);
+    }
+
+    actionLog.addAction(timestamp, "Rebalanced portfolio value " + portfolio.getPortfolioValue(timestamp) + " to target weights " + targetWeights.toString());
+    return portfolio;
+}
+
     private boolean validateWeights() {
-        double totalWeight = 0;
-        for (Double weight : targetWeights.values()) {
-            totalWeight += weight;
-        }
-        if (totalWeight != 100) {
-            return false;
-        }
-        return true;
+        return targetWeights.values().stream().mapToDouble(Double::doubleValue).sum() == 100;
     }
 }
