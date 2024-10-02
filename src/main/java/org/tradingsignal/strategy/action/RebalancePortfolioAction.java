@@ -8,8 +8,10 @@ import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.stock.StockData;
 import org.tradingsignal.strategy.portfolio.Asset;
 import org.tradingsignal.strategy.portfolio.Portfolio;
+import org.tradingsignal.util.Utils;
 
 import javax.swing.*;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,14 +20,14 @@ public class RebalancePortfolioAction implements StrategyAction {
 
     private StockDataService stockDataService;
 
-    private Map<String, Double> targetWeights;
+    private Map<String, BigDecimal> targetWeights;
 
     public RebalancePortfolioAction() {
         targetWeights = new HashMap<>();
         stockDataService = new StockDataService();
     }
 
-    public RebalancePortfolioAction addWeight(String symbol, Double weight) {
+    public RebalancePortfolioAction addWeight(String symbol, BigDecimal weight) {
         targetWeights.put(symbol.toUpperCase(), weight);
         return this;
     }
@@ -38,53 +40,56 @@ public class RebalancePortfolioAction implements StrategyAction {
         }
 
         // Calculate current weights
-        double totalPortfolioValue = portfolio.getPortfolioValue(timestamp);
-        Map<String, Double> currentWeights = new HashMap<>();
+        BigDecimal totalPortfolioValue = portfolio.getPortfolioValue(timestamp);
+        Map<String, BigDecimal> currentWeights = new HashMap<>();
         for (Map.Entry<String, Asset> entry : portfolio.getAssets().entrySet()) {
             String symbol = entry.getKey();
             Asset asset = entry.getValue();
-            double assetValue = asset.getValue(stockDataService, timestamp);
-            currentWeights.put(symbol, (assetValue / totalPortfolioValue) * 100);
+            BigDecimal assetValue = asset.getValue(stockDataService, timestamp);
+            currentWeights.put(symbol, assetValue.divide(totalPortfolioValue, 2, BigDecimal.ROUND_HALF_UP).multiply(BigDecimal.valueOf(100)));
         }
 
         // Check if rebalancing is needed
         boolean needsRebalancing = false;
-        for (Map.Entry<String, Double> entry : targetWeights.entrySet()) {
+        for (Map.Entry<String, BigDecimal> entry : targetWeights.entrySet()) {
             String symbol = entry.getKey();
-            double targetWeight = entry.getValue();
-            double currentWeight = currentWeights.getOrDefault(symbol, 0.0);
-            if (Math.abs(targetWeight - currentWeight) > 1.0) { // Allow a 1% tolerance
+            BigDecimal targetWeight = entry.getValue();
+            BigDecimal currentWeight = currentWeights.getOrDefault(symbol, BigDecimal.valueOf(0));
+            if (Math.abs(targetWeight.doubleValue() - currentWeight.doubleValue()) > 1.0) { // Allow a 1% tolerance
                 needsRebalancing = true;
                 break;
             }
         }
 
         if (!needsRebalancing) {
-            actionLog.addAction(timestamp, "No rebalancing needed. Portfolio already close to target weights.");
+//            actionLog.addAction(timestamp, "No rebalancing needed. Portfolio already close to target weights.");
             return portfolio;
         }
 
         // Proceed with rebalancing
         portfolio.sellAll(timestamp);
-        for (Map.Entry<String, Double> entry : targetWeights.entrySet()) {
+        for (Map.Entry<String, BigDecimal> entry : targetWeights.entrySet()) {
             String symbol = entry.getKey();
-            double targetWeight = entry.getValue();
-            double targetValue = totalPortfolioValue * targetWeight / 100;
-            double currentSharePrice = stockDataService.getStockPriceAtTime(symbol, timestamp).getClose();
-            currentSharePrice = Math.floor(currentSharePrice * 100) / 100;
-            double numShares = targetValue / currentSharePrice;
+            BigDecimal targetWeight = entry.getValue();
+            BigDecimal targetValue = totalPortfolioValue.multiply(targetWeight).divide(BigDecimal.valueOf(100));
+            BigDecimal currentSharePrice = BigDecimal.valueOf(stockDataService.getStockPriceAtTime(symbol, timestamp).getClose());
+            BigDecimal numShares = targetValue.divide(currentSharePrice, 2, BigDecimal.ROUND_DOWN);
             portfolio.buy(symbol, currentSharePrice, numShares);
         }
 
-        actionLog.addAction(timestamp, "Rebalanced portfolio value " + portfolio.getPortfolioValue(timestamp) + " to target weights " + targetWeights.toString());
+        actionLog.addAction(timestamp, "Rebalanced portfolio value " + Utils.roundDownToTwoDecimals(portfolio.getPortfolioValue(timestamp).doubleValue()) + " to target weights " + targetWeights.toString());
 
-        if (totalPortfolioValue != portfolio.getPortfolioValue(timestamp)) {
+        if (totalPortfolioValue.doubleValue() != portfolio.getPortfolioValue(timestamp).doubleValue()) {
             throw new RuntimeException("Portfolio value mismatch");
         }
         return portfolio;
     }
 
     private boolean validateWeights() {
-        return targetWeights.values().stream().mapToDouble(Double::doubleValue).sum() == 100;
+        BigDecimal totalWeight = BigDecimal.ZERO;
+        for (BigDecimal weight : targetWeights.values()) {
+            totalWeight = totalWeight.add(weight);
+        }
+        return totalWeight.doubleValue() == 100.0;
     }
 }

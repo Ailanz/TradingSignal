@@ -66,7 +66,7 @@ public class Condition {
         };
 
         if (isTrue) {
-            actionLog.addAction(timestamp, "Condition: " + conditionType + " " + " " + valueType + " : " + value  + ", " + technicalIndicator.getClass().getSimpleName() + " : " + indicatorValue);
+//            actionLog.addAction(timestamp, "Condition: " + conditionType + " " + " " + valueType + " : " + value  + ", " + technicalIndicator.getClass().getSimpleName() + " : " + indicatorValue);
         }
 
         return isTrue;

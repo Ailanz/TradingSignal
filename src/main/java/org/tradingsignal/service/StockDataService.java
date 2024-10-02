@@ -28,7 +28,7 @@ public class StockDataService {
                 StockConfigBuilder.builder()
                         .symbol(symbol)
                         .fromPeriod(0L)
-                        .toPeriod(DateCalc.now())
+                        .toPeriod(DateCalc.now() * 1000)
                         .interval(StockConfigBuilder.Interval.ONE_DAY)
                         .build()
         );
@@ -55,16 +55,6 @@ public class StockDataService {
         StockData stockData = StockData.fromStockPrice(stockPrice);
         stockDataCache.put(url, stockData);
         return stockData;
-    }
-
-    public DatePrice getLatestStockPrice(String symbol) {
-        StockData stockData = getStockPrice(StockConfigBuilder.builder()
-                .symbol(symbol)
-                .fromPeriod(DateCalc.daysBefore(365))
-                .toPeriod(DateCalc.now())
-                .interval(StockConfigBuilder.Interval.ONE_DAY)
-                .build());
-        return stockData.getLatestPrice();
     }
 
     public DatePrice getStockPriceAtTime(String symbol, Long timestamp) {

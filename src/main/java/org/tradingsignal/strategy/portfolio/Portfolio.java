@@ -3,7 +3,9 @@ package org.tradingsignal.strategy.portfolio;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.tradingsignal.service.StockDataService;
+import org.tradingsignal.util.Utils;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,43 +23,32 @@ public class Portfolio {
 
     public Portfolio(double cash) {
         this();
-        this.assets.put(Asset.CASH, new Asset(Asset.CASH, 1, cash));
+        this.assets.put(Asset.CASH, new Asset(Asset.CASH, BigDecimal.ONE, BigDecimal.valueOf(cash)));
     }
 
-    public double getPortfolioValue() {
-        double portfolioValue = 0;
+    public BigDecimal getPortfolioValue(Long timestamp) {
+        BigDecimal portfolioValue = BigDecimal.ZERO;
         for (Asset asset : assets.values()) {
-            portfolioValue += asset.getValue(stockDataService);
+            portfolioValue = portfolioValue.add(asset.getValue(stockDataService, timestamp));
         }
         return portfolioValue;
     }
 
-    public double getPortfolioValue(Long timestamp) {
-        double portfolioValue = 0;
-        for (Asset asset : assets.values()) {
-            portfolioValue += asset.getValue(stockDataService, timestamp);
-        }
-        return Math.floor(portfolioValue * 100) / 100;
-    }
-
     public void sellAll(Long timestamp) {
-        double totalPortfolioValue = getPortfolioValue(timestamp);
+        BigDecimal totalPortfolioValue = getPortfolioValue(timestamp);
         assets.clear();
-        assets.put(Asset.CASH, new Asset(Asset.CASH, 1, totalPortfolioValue));
+        assets.put(Asset.CASH, new Asset(Asset.CASH, BigDecimal.ONE, totalPortfolioValue));
     }
 
-    public void buy(String symbol, double price, double quantity) {
-        assets.putIfAbsent(symbol.toUpperCase(), new Asset(symbol, price, 0));
-        assets.putIfAbsent(Asset.CASH, new Asset(Asset.CASH, 1, 0));
+    public void buy(String symbol, BigDecimal price, BigDecimal quantity) {
+        assets.putIfAbsent(symbol.toUpperCase(), new Asset(symbol, price, BigDecimal.ZERO));
+        assets.putIfAbsent(Asset.CASH, new Asset(Asset.CASH, BigDecimal.ONE, BigDecimal.ZERO));
 
-        //round price to 2 decimal places
-        price = Math.floor(price * 100.0) / 100.0;
-        quantity = Math.floor(quantity * 100.0) / 100.0;
-        double totalValue = Math.floor(price * quantity * 100.0) / 100.0;
-        if (assets.get(Asset.CASH).getQuantity() < totalValue) {
+        BigDecimal totalValue = price.multiply(quantity);
+        if (assets.get(Asset.CASH).getQuantity().doubleValue() < totalValue.doubleValue()) {
             throw new IllegalArgumentException("Not enough cash to buy " + quantity + " of " + symbol);
         }
-        assets.get(symbol.toUpperCase()).setQuantity(assets.get(symbol.toUpperCase()).getQuantity() + quantity);
-        assets.get(Asset.CASH).setQuantity(assets.get(Asset.CASH).getQuantity() - totalValue);
+        assets.get(symbol.toUpperCase()).setQuantity(assets.get(symbol.toUpperCase()).getQuantity().add(quantity));
+        assets.get(Asset.CASH).setQuantity(assets.get(Asset.CASH).getQuantity().subtract(totalValue));
     }
 }

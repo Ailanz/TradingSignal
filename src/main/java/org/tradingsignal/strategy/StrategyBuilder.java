@@ -28,6 +28,11 @@ public class StrategyBuilder {
         if (this.createdDate == null) {
             this.createdDate = System.currentTimeMillis();
         }
+
+        if (this.actionLog == null) {
+            this.actionLog = new ActionLog();
+        }
+
         this.lastModifiedDate = System.currentTimeMillis();
         return this;
     }

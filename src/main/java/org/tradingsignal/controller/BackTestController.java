@@ -12,12 +12,17 @@ import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
 import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.action.RebalancePortfolioAction;
+import org.tradingsignal.strategy.indicator.ExponentialMovingAverageIndicator;
 import org.tradingsignal.strategy.indicator.SimpleMovingAverageIndicator;
 import org.tradingsignal.strategy.portfolio.Asset;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 import org.tradingsignal.util.DateCalc;
+import org.tradingsignal.util.Utils;
 
 import javax.swing.*;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,12 +41,12 @@ public class BackTestController {
     public List<String> test() {
         ActionLog actionLog = new ActionLog();
 
-        List<Asset> assets = new LinkedList();
-        assets.add(new Asset(Asset.CASH, 1, 10000));
-        Portfolio portfolio = new Portfolio(10000);
+        double initialCash = 10000;
+        Portfolio portfolio = new Portfolio(initialCash);
 
         String symbol = "UPRO";
-        StockData spyStockData = stockDataService.getStockPrice(symbol);
+        StockData stockData = stockDataService.getStockPrice(symbol);
+        StockData spyStockData = stockDataService.getStockPrice("SPY");
 
         StrategyBuilder strategyBuilder = StrategyBuilder.builder()
                 .name("Simple Moving Average")
@@ -51,21 +56,28 @@ public class BackTestController {
                         new SubStrategy(
                                 SubStrategy.Operation.AND,
                                 List.of(
-                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new SimpleMovingAverageIndicator(200), spyStockData, Condition.ValueType.CURRENT_PRICE)
+                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new SimpleMovingAverageIndicator(50), spyStockData, Condition.ValueType.CURRENT_PRICE)
+//                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new ExponentialMovingAverageIndicator(100), spyStockData, Condition.ValueType.CURRENT_PRICE)
                                 ),
-                                new RebalancePortfolioAction().addWeight(symbol, 100d)
+                                new RebalancePortfolioAction().addWeight(symbol, BigDecimal.valueOf(100d))
                         ),
                         new SubStrategy(
                                 SubStrategy.Operation.AND,
                                 List.of(
-                                        new Condition(Condition.ConditionType.LESS, new SimpleMovingAverageIndicator(200), spyStockData, Condition.ValueType.CURRENT_PRICE)
+                                        new Condition(Condition.ConditionType.LESS, new SimpleMovingAverageIndicator(50), spyStockData, Condition.ValueType.CURRENT_PRICE)
+//                                        new Condition(Condition.ConditionType.LESS, new ExponentialMovingAverageIndicator(100), spyStockData, Condition.ValueType.CURRENT_PRICE)
                                 ),
-                                new RebalancePortfolioAction().addWeight(Asset.CASH, 100d)
+                                new RebalancePortfolioAction().addWeight(Asset.CASH, BigDecimal.valueOf(100d))
+//                                new RebalancePortfolioAction().addWeight(symbol, BigDecimal.valueOf(100d))
                         )))
                 .build();
 
         strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(366 * 5), DateCalc.now());
-        actionLog.addAction(DateCalc.now(), "Final portfolio value: " + portfolio.getPortfolioValue(DateCalc.now()));
+        BigDecimal finalPortfolioValue = portfolio.getPortfolioValue(DateCalc.now());
+        //P&L %
+        BigDecimal pnl = finalPortfolioValue.divide(BigDecimal.valueOf(initialCash), new MathContext(4, RoundingMode.HALF_UP));
+        actionLog.addAction(DateCalc.now(), "Final portfolio value: " + finalPortfolioValue +
+                " P&L: " + Utils.roundDownToTwoDecimals(pnl.doubleValue() * 100 - 100) + "%");
         return actionLog.getActionLog().stream().map(action -> DateCalc.toDateString(action.getKey()) + " : " + action.getValue()).toList();
     }
 
@@ -74,8 +86,6 @@ public class BackTestController {
     public List<String> allSPY() {
         ActionLog actionLog = new ActionLog();
 
-        List<Asset> assets = new LinkedList();
-        assets.add(new Asset(Asset.CASH, 1, 10000));
         Portfolio portfolio = new Portfolio(10000);
 
         StockData spyStockData = stockDataService.getStockPrice("SPY");
@@ -83,17 +93,18 @@ public class BackTestController {
         StrategyBuilder strategyBuilder = StrategyBuilder.builder()
                 .name("Simple Moving Average")
                 .description("Buy when the short-term moving average crosses above the long-term moving average")
+                .actionLog(actionLog)
                 .subStrategies(List.of(
                         new SubStrategy(
                                 SubStrategy.Operation.AND,
                                 List.of(
                                         new Condition(Condition.ConditionType.LESS, new SimpleMovingAverageIndicator(10), spyStockData, 1d)
                                 ),
-                                new RebalancePortfolioAction().addWeight("SPY", 100d)
+                                new RebalancePortfolioAction().addWeight("SPY", BigDecimal.valueOf(100d))
                         )))
                 .build();
 
-        strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(365), DateCalc.now());
+        strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(5), DateCalc.now());
         actionLog.addAction(DateCalc.now(), "Final portfolio value: " + portfolio.getPortfolioValue(DateCalc.now()));
         return actionLog.getActionLog().stream().map(action -> DateCalc.toDateString(action.getKey()) + " : " + action.getValue()).toList();
     }
