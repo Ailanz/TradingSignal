@@ -28,7 +28,7 @@ public class StockDataService {
                 StockConfigBuilder.builder()
                         .symbol(symbol)
                         .fromPeriod(0L)
-                        .toPeriod(DateCalc.now() * 1000)
+                        .toPeriod(DateCalc.now())
                         .interval(StockConfigBuilder.Interval.ONE_DAY)
                         .build()
         );

@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 @Log4j2
 @Builder
 public class StockConfigBuilder {
-    private static String YAHOO_API_URL = "https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&period1=${from_period}&period2=${to_period}&useYfid=true&interval=${interval}&includePrePost=true&events=div%7Csplit%7Cearn&lang=en-CA&region=CA&crumb=Ydr6HTce7B1&corsDomain=ca.finance.yahoo.com";
+    private static String YAHOO_API_URL = "https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?symbol=${symbol}&period1=${from_period}&period2=${to_period}&useYfid=true&interval=${interval}&includePrePost=false&events=div%7Csplit%7Cearn&lang=en-CA&region=CA&crumb=Ydr6HTce7B1&corsDomain=ca.finance.yahoo.com";
 
     private String symbol;
     private Long fromPeriod;

@@ -37,7 +37,10 @@ public class ExponentialMovingAverageIndicator implements TechnicalIndicator {
         // Calculate the EMA for the rest of the values
         for (int i = period; i < datePrices.size(); i++) {
             double closePrice = datePrices.get(i).getClose();
-            ema = ((closePrice - ema) * multiplier) + ema;
+            ema = (closePrice * (2d/ (1 + period))) + (ema * (1 - (2d/ (1 + period))));
+
+//            double closePrice = datePrices.get(i).getClose();
+//            ema = ((closePrice - ema) * multiplier) + ema;
             emaValues.add(new AbstractMap.SimpleEntry<>(datePrices.get(i).getTimestamp().longValue(), ema));
         }
 
