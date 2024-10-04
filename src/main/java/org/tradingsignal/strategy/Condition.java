@@ -9,6 +9,7 @@ import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.indicator.TechnicalIndicator;
 
 import java.util.AbstractMap;
+import java.util.Comparator;
 import java.util.List;
 
 @Data
@@ -17,7 +18,7 @@ public class Condition {
         GREATER,
         LESS,
         GREATER_OR_EQUAL,
-        LESS_OR_EQUAL
+        LESS_OR_EQUAL,
     }
 
     public enum ValueType {
@@ -45,6 +46,9 @@ public class Condition {
         this.conditionType = conditionType;
         this.technicalIndicator = technicalIndicator;
         this.indicatorValues = technicalIndicator.calculate(stockData);
+        //ensure indicator values are sorted by timestamp
+        this.indicatorValues.sort(java.util.Map.Entry.comparingByKey());
+
         this.valueType = valueType;
         this.value = value;
         this.stockData = stockData;
@@ -58,7 +62,7 @@ public class Condition {
 
         double value = getValue(timestamp);
         boolean isTrue = switch (conditionType) {
-            case GREATER -> value> indicatorValue;
+            case GREATER -> value > indicatorValue;
             case LESS -> value < indicatorValue;
             case GREATER_OR_EQUAL -> value >= indicatorValue;
             case LESS_OR_EQUAL -> value <= indicatorValue;
@@ -67,6 +71,9 @@ public class Condition {
 
         if (isTrue) {
 //            actionLog.addAction(timestamp, "Condition: " + conditionType + " " + " " + valueType + " : " + value  + ", " + technicalIndicator.getClass().getSimpleName() + " : " + indicatorValue);
+        } else {
+//            actionLog.addAction(timestamp, "Condition not met: " + conditionType + " " + " " + valueType + " : " + value + ", " + technicalIndicator.getClass().getSimpleName() + " : " + indicatorValue);
+
         }
 
         return isTrue;
@@ -87,7 +94,7 @@ public class Condition {
             return this.value;
         }
         if (this.valueType == ValueType.CURRENT_PRICE) {
-            DatePrice datePrice = StockDataService.findDatePrice(timestamp, stockData);
+            DatePrice datePrice = StockDataService.findDatePrice(timestamp, this.stockData);
             return datePrice.getClose();
         }
         throw new RuntimeException("Invalid value type");

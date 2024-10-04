@@ -44,8 +44,10 @@ public class BackTestController {
         double initialCash = 10000;
         Portfolio portfolio = new Portfolio(initialCash);
 
-        String symbol = "TQQQ";
-        StockData spyStockData = stockDataService.getStockPrice("QQQ");
+        String leverageSymbol = "UPRO";
+        String symbol = "SPY";
+        StockData spyStockData = stockDataService.getStockPrice(symbol);
+        double smoothing = 2;
 
         StrategyBuilder strategyBuilder = StrategyBuilder.builder()
                 .name("Simple Moving Average")
@@ -56,22 +58,25 @@ public class BackTestController {
                                 SubStrategy.Operation.AND,
                                 List.of(
                                         new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new SimpleMovingAverageIndicator(200), spyStockData, Condition.ValueType.CURRENT_PRICE)
-//                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new ExponentialMovingAverageIndicator(100), spyStockData, Condition.ValueType.CURRENT_PRICE)
+//                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new ExponentialMovingAverageIndicator(200, smoothing), spyStockData, Condition.ValueType.CURRENT_PRICE)
                                 ),
-                                new RebalancePortfolioAction().addWeight(symbol, BigDecimal.valueOf(100d))
+                                new RebalancePortfolioAction().addWeight(leverageSymbol, BigDecimal.valueOf(100d))
                         ),
                         new SubStrategy(
                                 SubStrategy.Operation.AND,
                                 List.of(
                                         new Condition(Condition.ConditionType.LESS, new SimpleMovingAverageIndicator(200), spyStockData, Condition.ValueType.CURRENT_PRICE)
-//                                        new Condition(Condition.ConditionType.LESS, new ExponentialMovingAverageIndicator(100), spyStockData, Condition.ValueType.CURRENT_PRICE)
+//                                        new Condition(Condition.ConditionType.LESS, new ExponentialMovingAverageIndicator(200, smoothing), spyStockData, Condition.ValueType.CURRENT_PRICE)
                                 ),
                                 new RebalancePortfolioAction().addWeight(Asset.CASH, BigDecimal.valueOf(100d))
 //                                new RebalancePortfolioAction().addWeight(symbol, BigDecimal.valueOf(100d))
-                        )))
-                .build();
+//                                new RebalancePortfolioAction().addWeight("SPY", BigDecimal.valueOf(100d))
+                        )
+                        ,SubStrategy.DIVIDEND_PAYMENT
+                ))
+                .build().build();
 
-        strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(366 * 10), DateCalc.now());
+        strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(366 * 15), DateCalc.now());
         BigDecimal finalPortfolioValue = portfolio.getPortfolioValue(DateCalc.now());
         //P&L %
         BigDecimal pnl = finalPortfolioValue.divide(BigDecimal.valueOf(initialCash), new MathContext(4, RoundingMode.HALF_UP));
@@ -101,7 +106,7 @@ public class BackTestController {
                                 ),
                                 new RebalancePortfolioAction().addWeight("SPY", BigDecimal.valueOf(100d))
                         )))
-                .build();
+                .build().build();
 
         strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(5), DateCalc.now());
         actionLog.addAction(DateCalc.now(), "Final portfolio value: " + portfolio.getPortfolioValue(DateCalc.now()));

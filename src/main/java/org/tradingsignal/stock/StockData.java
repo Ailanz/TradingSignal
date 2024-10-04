@@ -14,6 +14,7 @@ public class StockData {
     private String exchangeName;
     private double regularMarketPrice;
     private List<DatePrice> datePrices;
+    private List<DateDividends> dividends;
 
 
     public static StockData fromStockPrice(StockPrice stockPrice) {
@@ -36,16 +37,17 @@ public class StockData {
             datePrice.setClose(quote.getClose().get(i));
             datePrices.add(datePrice);
         }
-
         stockData.setDatePrices(datePrices);
+
+        //set dividends
+        List<DateDividends> dividends = new ArrayList<>();
+        stockPrice.getChart().getResult().get(0).getEvents().getDividends().forEach((key, value) -> {
+            DateDividends dateDividends = new DateDividends();
+            dateDividends.setTimestamp(Long.parseLong(key));
+            dateDividends.setValue(value.getAmount());
+            dividends.add(dateDividends);
+        });
+        stockData.setDividends(dividends);
         return stockData;
     }
-
-    public DatePrice getLatestPrice() {
-        if (datePrices == null || datePrices.isEmpty()) {
-            return null;
-        }
-        return datePrices.get(datePrices.size() - 1);
-    }
-// getters and setters
 }

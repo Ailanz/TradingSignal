@@ -6,6 +6,8 @@ import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.util.Utils;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,5 +52,9 @@ public class Portfolio {
         }
         assets.get(symbol.toUpperCase()).setQuantity(assets.get(symbol.toUpperCase()).getQuantity().add(quantity));
         assets.get(Asset.CASH).setQuantity(assets.get(Asset.CASH).getQuantity().subtract(totalValue));
+    }
+
+    public void addCash(BigDecimal amount) {
+        assets.get(Asset.CASH).setQuantity(assets.get(Asset.CASH).getQuantity().add(amount));
     }
 }

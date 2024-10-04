@@ -10,9 +10,11 @@ import java.util.List;
 public class ExponentialMovingAverageIndicator implements TechnicalIndicator {
 
     private final int period;
+    private final double smoothingFactor;
 
-    public ExponentialMovingAverageIndicator(int period) {
+    public ExponentialMovingAverageIndicator(int period, double smoothingFactor) {
         this.period = period;
+        this.smoothingFactor = smoothingFactor;
     }
 
     @Override
@@ -24,7 +26,7 @@ public class ExponentialMovingAverageIndicator implements TechnicalIndicator {
             return emaValues; // Not enough data to calculate EMA
         }
 
-        double multiplier = 2.0 / (period + 1);
+        double multiplier = this.smoothingFactor / (period + 1);
         double ema = 0.0;
 
         // Calculate the initial SMA (Simple Moving Average) for the first 'period' values
@@ -37,7 +39,7 @@ public class ExponentialMovingAverageIndicator implements TechnicalIndicator {
         // Calculate the EMA for the rest of the values
         for (int i = period; i < datePrices.size(); i++) {
             double closePrice = datePrices.get(i).getClose();
-            ema = (closePrice * (2d/ (1 + period))) + (ema * (1 - (2d/ (1 + period))));
+            ema = (closePrice * multiplier) + (ema * (1 - multiplier));
 
 //            double closePrice = datePrices.get(i).getClose();
 //            ema = ((closePrice - ema) * multiplier) + ema;

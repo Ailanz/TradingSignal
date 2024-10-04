@@ -3,6 +3,7 @@ package org.tradingsignal.strategy;
 import lombok.Builder;
 import lombok.Data;
 import org.tradingsignal.strategy.action.ActionLog;
+import org.tradingsignal.strategy.action.DividendPaymentAction;
 import org.tradingsignal.strategy.action.StrategyAction;
 
 import java.util.List;
@@ -33,6 +34,7 @@ public class StrategyBuilder {
             this.actionLog = new ActionLog();
         }
 
+        //Always Create Dividend Action
         this.lastModifiedDate = System.currentTimeMillis();
         return this;
     }

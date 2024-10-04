@@ -47,12 +47,23 @@ public class StrategyExecutorService {
             }
 
             for (SubStrategy subStrategy : strategy.getSubStrategies()) {
-
+                boolean allConditionsMet = true;
                 for (Condition condition : subStrategy.getConditions()) {
-                    if (condition.isMet(timestamp, actionLog)) {
-                        // Execute the action
-                        subStrategy.getAction().execute(portfolio, timestamp, actionLog);
+                    boolean conditionMet = condition.isMet(timestamp, actionLog);
+                    if(subStrategy.getOperation().equals(SubStrategy.Operation.ALWAYS_TRUE)) {
+                        allConditionsMet = true;
+                        break;
                     }
+
+                    if (subStrategy.getOperation().equals(SubStrategy.Operation.AND)) {
+                        allConditionsMet = allConditionsMet && conditionMet;
+                    } else if (subStrategy.getOperation().equals(SubStrategy.Operation.OR)) {
+                        allConditionsMet = allConditionsMet || conditionMet;
+                    }
+                }
+
+                if (allConditionsMet) {
+                    subStrategy.getAction().execute(portfolio, timestamp, actionLog);
                 }
             }
         }
