@@ -57,4 +57,12 @@ public class Portfolio {
     public void addCash(BigDecimal amount) {
         assets.get(Asset.CASH).setQuantity(assets.get(Asset.CASH).getQuantity().add(amount));
     }
+    
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Asset> entry : assets.entrySet()) {
+            sb.append(entry.getKey()).append(": ").append(entry.getValue().getQuantity().round(new MathContext(5, RoundingMode.HALF_UP)).doubleValue()).append(", ");
+        }
+        return sb.toString();
+    }
 }

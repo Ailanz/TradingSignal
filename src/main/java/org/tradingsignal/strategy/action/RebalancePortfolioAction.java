@@ -77,7 +77,7 @@ public class RebalancePortfolioAction implements StrategyAction {
             portfolio.buy(symbol, currentSharePrice, numShares);
         }
 
-        actionLog.addAction(timestamp, "Rebalanced portfolio value " + Utils.roundDownToTwoDecimals(portfolio.getPortfolioValue(timestamp).doubleValue()) + " to target weights " + targetWeights.toString());
+        actionLog.addAction(timestamp,String.format("Rebalanced value %s to weights %s", Utils.roundDownToTwoDecimals(portfolio.getPortfolioValue(timestamp).doubleValue()), targetWeights.toString()));
 
         if (totalPortfolioValue.doubleValue() != portfolio.getPortfolioValue(timestamp).doubleValue()) {
             throw new RuntimeException("Portfolio value mismatch");

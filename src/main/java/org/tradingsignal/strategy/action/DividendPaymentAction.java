@@ -44,7 +44,7 @@ public class DividendPaymentAction implements StrategyAction {
                         portfolio.addCash(dividendAmount);
 
                         if (dividendAmount.doubleValue() != 0d) {
-                            actionLog.addAction(timestamp, "Dividend payment for " + symbol + " of " + Utils.roundDownToTwoDecimals(dividendAmount));
+                            actionLog.addAction(timestamp, String.format("Dividend payment for %s of %s (%s per share, %s shares)", symbol, Utils.roundDownToTwoDecimals(dividendAmount), dividend.getValue(), entry.getValue().getQuantity()));
                         }
                     }
                 }
