@@ -1,12 +1,14 @@
 package org.tradingsignal.stock;
 
 import lombok.Data;
+import org.tradingsignal.pojo.yahoo.Dividend;
 import org.tradingsignal.pojo.yahoo.Meta;
 import org.tradingsignal.pojo.yahoo.Quote;
 import org.tradingsignal.pojo.yahoo.StockPrice;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class StockData {
@@ -41,13 +43,17 @@ public class StockData {
 
         //set dividends
         List<DateDividends> dividends = new ArrayList<>();
-        stockPrice.getChart().getResult().get(0).getEvents().getDividends().forEach((key, value) -> {
-            DateDividends dateDividends = new DateDividends();
-            dateDividends.setTimestamp(Long.parseLong(key));
-            dateDividends.setValue(value.getAmount());
-            dividends.add(dateDividends);
-        });
-        stockData.setDividends(dividends);
+        Map<String, Dividend> dividendMap = stockPrice.getChart().getResult().get(0).getEvents().getDividends();
+        if (dividendMap != null) {
+            dividendMap.forEach((key, value) -> {
+                DateDividends dateDividends = new DateDividends();
+                dateDividends.setTimestamp(Long.parseLong(key));
+                dateDividends.setValue(value.getAmount());
+                dividends.add(dateDividends);
+            });
+            stockData.setDividends(dividends);
+        }
+
         return stockData;
     }
 }

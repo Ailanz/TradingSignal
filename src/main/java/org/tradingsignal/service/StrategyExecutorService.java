@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockData;
+import org.tradingsignal.strategy.BackTestResult;
 import org.tradingsignal.strategy.Condition;
 import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
@@ -19,7 +20,8 @@ public class StrategyExecutorService {
     @Autowired
     private StockDataService stockDataService;
 
-    public Portfolio executeStrategy(StrategyBuilder strategy, Portfolio portfolio, Long fromTimestamp, Long toTimestamp) {
+    public BackTestResult executeStrategy(StrategyBuilder strategy, Portfolio portfolio, Long fromTimestamp, Long toTimestamp) {
+        BackTestResult backTestResult = new BackTestResult(portfolio);
         ActionLog actionLog = strategy.getActionLog();
         if (strategy == null) {
             throw new IllegalArgumentException("Strategy cannot be null");
@@ -34,7 +36,12 @@ public class StrategyExecutorService {
             for (Condition condition : subStrategy.getConditions()) {
                 String symbol = condition.getSymbol();
                 StockData stockData = stockDataService.getStockPrice(symbol);
-                allTimestamps.addAll(stockData.getDatePrices().stream().map(DatePrice::getTimestamp).toList());
+                List<Long> timestamps = stockData.getDatePrices().stream().map(DatePrice::getTimestamp).toList();
+                if (allTimestamps.isEmpty()) {
+                    allTimestamps.addAll(timestamps);
+                } else {
+                    allTimestamps = intersectList(allTimestamps, timestamps);
+                }
             }
         }
 
@@ -66,9 +73,20 @@ public class StrategyExecutorService {
                     subStrategy.getAction().execute(portfolio, timestamp, actionLog);
                 }
             }
+            backTestResult.addPortfolioValue(timestamp, portfolio.getPortfolioValue(timestamp));
         }
 
-        return portfolio;
+        return backTestResult;
 
+    }
+
+    private List<Long> intersectList(List<Long> list1, List<Long> list2) {
+        List<Long> result = new LinkedList<>();
+        for (Long l : list1) {
+            if (list2.contains(l)) {
+                result.add(l);
+            }
+        }
+        return result;
     }
 }
