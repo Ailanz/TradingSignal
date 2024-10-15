@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class Period {
     private String timezone;
-    private int end;
-    private int start;
-    private int gmtoffset;
+    private long end;
+    private long start;
+    private long gmtoffset;
 }

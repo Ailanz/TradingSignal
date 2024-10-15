@@ -6,7 +6,7 @@ import java.util.List;
 
 @Data
 public class Quote {
-    private List<Integer> volume;
+    private List<Long> volume;
     private List<Double> low;
     private List<Double> open;
     private List<Double> high;

@@ -11,8 +11,8 @@ public class Meta {
     private String exchangeName;
     private String fullExchangeName;
     private String instrumentType;
-    private int firstTradeDate;
-    private int regularMarketTime;
+    private long firstTradeDate;
+    private long regularMarketTime;
     private boolean hasPrePostMarketData;
     private int gmtoffset;
     private String timezone;
@@ -22,7 +22,7 @@ public class Meta {
     private double fiftyTwoWeekLow;
     private double regularMarketDayHigh;
     private double regularMarketDayLow;
-    private int regularMarketVolume;
+    private long regularMarketVolume;
     private String longName;
     private String shortName;
     private double chartPreviousClose;
