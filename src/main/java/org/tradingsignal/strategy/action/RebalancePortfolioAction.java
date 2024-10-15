@@ -14,6 +14,7 @@ import javax.swing.*;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Data
 public class RebalancePortfolioAction implements StrategyAction {
@@ -83,6 +84,11 @@ public class RebalancePortfolioAction implements StrategyAction {
             throw new RuntimeException("Portfolio value mismatch");
         }
         return portfolio;
+    }
+
+    @Override
+    public Set<String> getSymbols() {
+        return targetWeights.keySet();
     }
 
     private boolean validateWeights() {

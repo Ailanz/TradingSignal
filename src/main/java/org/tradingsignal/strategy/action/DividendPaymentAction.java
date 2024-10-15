@@ -9,18 +9,18 @@ import org.tradingsignal.strategy.portfolio.Portfolio;
 import org.tradingsignal.util.Utils;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 public class DividendPaymentAction implements StrategyAction {
 
     private StockDataService stockDataService;
+    private Set<String> symbols;
 
 
     public DividendPaymentAction() {
-        stockDataService = new StockDataService();
+        this.stockDataService = new StockDataService();
+        this.symbols = new HashSet<>();
     }
 
 
@@ -32,7 +32,7 @@ public class DividendPaymentAction implements StrategyAction {
             if (symbol.equals(Asset.CASH)) {
                 continue;
             }
-
+            this.symbols.add(symbol);
 
             StockData stockData = stockDataService.getStockPrice(symbol);
             List<DateDividends> dividends = stockData.getDividends();
@@ -51,6 +51,11 @@ public class DividendPaymentAction implements StrategyAction {
             }
         }
         return portfolio;
+    }
+
+    @Override
+    public Set<String> getSymbols() {
+        return symbols;
     }
 
 }

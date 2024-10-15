@@ -1,8 +1,8 @@
 package org.tradingsignal.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.tradingsignal.service.StockDataService;
@@ -14,20 +14,17 @@ import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
 import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.action.RebalancePortfolioAction;
-import org.tradingsignal.strategy.indicator.ExponentialMovingAverageIndicator;
 import org.tradingsignal.strategy.indicator.SimpleMovingAverageIndicator;
-import org.tradingsignal.strategy.portfolio.Asset;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 import org.tradingsignal.util.DateCalc;
 import org.tradingsignal.util.Utils;
 
-import javax.swing.*;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.LinkedList;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/back-test")
 
@@ -90,14 +87,13 @@ public class BackTestController {
     }
 
     @GetMapping("/run")
-    public BackTestResult backtest(String symbolRiskOn, String symbolRiskOff) {
+    public BackTestResult backtest(String symbolRiskOn, String symbolRiskOff, String mvgAvgSymbol, int daysToBackTest) {
         ActionLog actionLog = new ActionLog();
 
         double initialCash = 10000;
         Portfolio portfolio = new Portfolio(initialCash);
 
-        int daysToBackTest = 366 * 1;
-        StockData mvgAvgStock = stockDataService.getStockPrice("QQQ");
+        StockData mvgAvgStock = stockDataService.getStockPrice(mvgAvgSymbol);
 
         StrategyBuilder strategyBuilder = StrategyBuilder.builder()
                 .name("Simple Moving Average")
@@ -123,6 +119,8 @@ public class BackTestController {
                 .build().build();
 
         BackTestResult backTestResult = strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(daysToBackTest), DateCalc.now());
+        backTestResult.addStockValues(symbolRiskOn, stockDataService.getStockPrice(symbolRiskOn));
+        backTestResult.addStockValues(symbolRiskOff, stockDataService.getStockPrice(symbolRiskOff));
         return backTestResult;
     }
 

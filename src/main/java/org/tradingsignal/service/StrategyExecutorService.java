@@ -9,6 +9,7 @@ import org.tradingsignal.strategy.Condition;
 import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
 import org.tradingsignal.strategy.action.ActionLog;
+import org.tradingsignal.strategy.action.StrategyAction;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 
 import java.util.LinkedList;
@@ -35,19 +36,18 @@ public class StrategyExecutorService {
         for (SubStrategy subStrategy : strategy.getSubStrategies()) {
             for (Condition condition : subStrategy.getConditions()) {
                 String symbol = condition.getSymbol();
-                StockData stockData = stockDataService.getStockPrice(symbol);
-                List<Long> timestamps = stockData.getDatePrices().stream().map(DatePrice::getTimestamp).toList();
-                if (allTimestamps.isEmpty()) {
-                    allTimestamps.addAll(timestamps);
-                } else {
-                    allTimestamps = intersectList(allTimestamps, timestamps);
-                }
+                allTimestamps = getIntersectTimeStamps(symbol, allTimestamps);
+            }
+
+            for (String symbol : subStrategy.getAction().getSymbols()) {
+                allTimestamps = getIntersectTimeStamps(symbol, allTimestamps);
             }
         }
 
         //De Duplication
         allTimestamps = allTimestamps.stream().distinct().sorted().toList();
 
+        //Run Strategy
         for (Long timestamp : allTimestamps) {
             if (timestamp < fromTimestamp || timestamp > toTimestamp) {
                 continue;
@@ -78,6 +78,17 @@ public class StrategyExecutorService {
 
         return backTestResult;
 
+    }
+
+    private List<Long> getIntersectTimeStamps(String symbol, List<Long> allTimestamps) {
+        StockData stockData = stockDataService.getStockPrice(symbol);
+        List<Long> timestamps = stockData.getDatePrices().stream().map(DatePrice::getTimestamp).toList();
+        if (allTimestamps.isEmpty()) {
+            allTimestamps.addAll(timestamps);
+        } else {
+            allTimestamps = intersectList(allTimestamps, timestamps);
+        }
+        return allTimestamps;
     }
 
     private List<Long> intersectList(List<Long> list1, List<Long> list2) {

@@ -1,10 +1,7 @@
 package org.tradingsignal.stock;
 
 import lombok.Data;
-import org.tradingsignal.pojo.yahoo.Dividend;
-import org.tradingsignal.pojo.yahoo.Meta;
-import org.tradingsignal.pojo.yahoo.Quote;
-import org.tradingsignal.pojo.yahoo.StockPrice;
+import org.tradingsignal.pojo.yahoo.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,15 +40,23 @@ public class StockData {
 
         //set dividends
         List<DateDividends> dividends = new ArrayList<>();
-        Map<String, Dividend> dividendMap = stockPrice.getChart().getResult().get(0).getEvents().getDividends();
-        if (dividendMap != null) {
-            dividendMap.forEach((key, value) -> {
-                DateDividends dateDividends = new DateDividends();
-                dateDividends.setTimestamp(Long.parseLong(key));
-                dateDividends.setValue(value.getAmount());
-                dividends.add(dateDividends);
-            });
-            stockData.setDividends(dividends);
+        try {
+            Events events = stockPrice.getChart().getResult().get(0).getEvents();
+            if (events == null) {
+                return stockData;
+            }
+            Map<String, Dividend> dividendMap = stockPrice.getChart().getResult().get(0).getEvents().getDividends();
+            if (dividendMap != null) {
+                dividendMap.forEach((key, value) -> {
+                    DateDividends dateDividends = new DateDividends();
+                    dateDividends.setTimestamp(Long.parseLong(key));
+                    dateDividends.setValue(value.getAmount());
+                    dividends.add(dateDividends);
+                });
+                stockData.setDividends(dividends);
+            }
+        } catch (Exception e) {
+            System.out.println("No dividends for " + stockData.getSymbol());
         }
 
         return stockData;
