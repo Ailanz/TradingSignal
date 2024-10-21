@@ -18,6 +18,7 @@ import org.tradingsignal.strategy.action.RebalancePortfolioAction;
 import org.tradingsignal.strategy.condition.PeriodicTimeCondition;
 import org.tradingsignal.strategy.indicator.PeriodicTimeIndicator;
 import org.tradingsignal.strategy.indicator.SimpleMovingAverageIndicator;
+import org.tradingsignal.strategy.portfolio.Asset;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 import org.tradingsignal.util.DateCalc;
 import org.tradingsignal.util.Utils;
@@ -48,7 +49,7 @@ public class BackTestController {
 
         int daysToBackTest = 366 * 10;
         String leverageSymbol = "TQQQ";
-        String symbol = "SVXY";
+        String symbol = Asset.CASH;
         StockData mvgAvgStock = stockDataService.getStockPrice("QQQ");
         double smoothing = 2;
 
@@ -61,11 +62,11 @@ public class BackTestController {
                                 SubStrategy.Operation.AND,
                                 List.of(
 //                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new PeriodicTimeIndicator(30), mvgAvgStock, Condition.ValueType.CURRENT_TIMESTAMP)
-                                        new PeriodicTimeCondition(30)
+                                        new PeriodicTimeCondition(90)
 //                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new ExponentialMovingAverageIndicator(200, smoothing), mvgAvgStock, Condition.ValueType.CURRENT_PRICE)
                                 ),
 //                                new RebalancePortfolioAction().addWeight(leverageSymbol, BigDecimal.valueOf(100d))
-                                new SigAction(0.09, leverageSymbol, symbol)
+                                new SigAction(0.06, leverageSymbol, symbol)
                         )
                         , SubStrategy.DIVIDEND_PAYMENT
                 ))

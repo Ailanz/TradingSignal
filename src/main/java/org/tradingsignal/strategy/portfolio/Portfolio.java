@@ -55,6 +55,7 @@ public class Portfolio {
 //            throw new IllegalArgumentException("Not enough cash to buy " + quantity + " of " + symbol);
             //Buy as much as we can
             quantity = assets.get(Asset.CASH).getQuantity().divide(price, 2, RoundingMode.HALF_UP);
+            totalValue = price.multiply(quantity);
         }
         assets.get(symbol.toUpperCase()).setQuantity(assets.get(symbol.toUpperCase()).getQuantity().add(quantity));
         assets.get(Asset.CASH).setQuantity(assets.get(Asset.CASH).getQuantity().subtract(totalValue));
@@ -63,7 +64,7 @@ public class Portfolio {
     public void addCash(BigDecimal amount) {
         assets.get(Asset.CASH).setQuantity(assets.get(Asset.CASH).getQuantity().add(amount));
     }
-    
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, Asset> entry : assets.entrySet()) {
@@ -72,14 +73,23 @@ public class Portfolio {
         return sb.toString();
     }
 
-    public void sell(String symbol, BigDecimal safeSymbolPrice, BigDecimal safeSymbolQuantityToSell, Long timestamp) {
-        BigDecimal totalValue = safeSymbolPrice.multiply(safeSymbolQuantityToSell);
-        if (assets.get(symbol).getQuantity().doubleValue() < safeSymbolQuantityToSell.doubleValue()) {
+    public void sellSymbolByDollarAmount(String symbol, BigDecimal dollarAmount, Long timestamp) {
+        BigDecimal pricePerShare = BigDecimal.valueOf(stockDataService.getStockPriceAtTime(symbol, timestamp).getClose());
+        BigDecimal quantity = dollarAmount.divide(pricePerShare, 2, RoundingMode.HALF_UP);
+        //TODO: Check if we have enough quantity to sell
+        if (assets.get(symbol).getQuantity().doubleValue() < quantity.doubleValue()) {
+            //sell all
             sellAll(symbol, timestamp);
             return;
         }
-        assets.get(symbol).setQuantity(assets.get(symbol).getQuantity().subtract(safeSymbolQuantityToSell));
-        assets.get(Asset.CASH).setQuantity(assets.get(Asset.CASH).getQuantity().add(totalValue));
+        assets.get(symbol).setQuantity(assets.get(symbol).getQuantity().subtract(quantity));
+        assets.get(Asset.CASH).setQuantity(assets.get(Asset.CASH).getQuantity().add(dollarAmount));
+    }
+
+    public void buySymbolDollarAmount(String symbol, BigDecimal dollarAmount, Long timestamp) {
+        BigDecimal price = BigDecimal.valueOf(stockDataService.getStockPriceAtTime(symbol, timestamp).getClose());
+        BigDecimal quantity = dollarAmount.divide(price, 2, RoundingMode.HALF_UP);
+        buy(symbol, price, quantity);
     }
 
     public void sellAll(String symbol, Long timestamp) {

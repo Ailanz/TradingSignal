@@ -36,33 +36,45 @@ public class SigAction implements StrategyAction {
                     .addWeight(riskSymbol, BigDecimal.valueOf(60))
                     .addWeight(safeSymbol, BigDecimal.valueOf(40)).
                     execute(portfolio, timestamp, new ActionLog());
-            this.targetValue = portfolio.getPortfolioValueOfSymbol(timestamp, riskSymbol).doubleValue();
+            this.targetValue = portfolio.getPortfolioValueOfSymbol(timestamp, riskSymbol).doubleValue() * (1 + increasePct);
+            return portfolio;
         }
 
+        BigDecimal startingPortfolioValue = portfolio.getPortfolioValue(timestamp);
         BigDecimal currentRiskValue = portfolio.getPortfolioValueOfSymbol(timestamp, riskSymbol);
         BigDecimal targetRiskValue = BigDecimal.valueOf(targetValue);
 
+        if (portfolio.getPortfolioValue(timestamp).compareTo(startingPortfolioValue) != 0) {
+            throw new RuntimeException("Portfolio value changed during rebalance");
+        }
+
+        BigDecimal differenceRiskValue = targetRiskValue.subtract(currentRiskValue).abs();
         if (currentRiskValue.compareTo(targetRiskValue) < 0) {
-            // Need to buy more riskSymbol
-            rebalanceToTarget(portfolio, timestamp, currentRiskValue, targetRiskValue, safeSymbol, riskSymbol);
+            BigDecimal cash = portfolio.getPortfolioValueOfSymbol(timestamp, Asset.CASH);
+            BigDecimal amountNeeded = differenceRiskValue.subtract(cash);
+            if (amountNeeded.compareTo(BigDecimal.ZERO) > 0) {
+                portfolio.sellSymbolByDollarAmount(safeSymbol, amountNeeded, timestamp);
+            }
+            portfolio.buySymbolDollarAmount(riskSymbol, differenceRiskValue, timestamp);
         } else if (currentRiskValue.compareTo(targetRiskValue) > 0) {
             // Need to sell some riskSymbol
-            rebalanceToTarget(portfolio, timestamp, targetRiskValue, currentRiskValue, riskSymbol, safeSymbol);
+            portfolio.sellSymbolByDollarAmount(riskSymbol, differenceRiskValue, timestamp);
+            BigDecimal cash = portfolio.getPortfolioValueOfSymbol(timestamp, Asset.CASH);
+            portfolio.buySymbolDollarAmount(safeSymbol, cash, timestamp);
         }
         this.targetValue = targetRiskValue.doubleValue() * (1 + increasePct);
-        actionLog.addAction(timestamp, String.format("Adjusted portfolio to target risk value: %s", targetRiskValue));
+
+        BigDecimal finalPortfolioValue = portfolio.getPortfolioValue(timestamp);
+        BigDecimal differenceValue = finalPortfolioValue.subtract(startingPortfolioValue).abs();
+        if (differenceValue.compareTo(BigDecimal.valueOf(1.0)) > 0) {
+            throw new RuntimeException("Portfolio value changed during rebalance: " + differenceValue);
+        }
+
+        actionLog.addAction(timestamp, String.format("Adjusted portfolio to target risk value: %s, portfolio value %s", targetRiskValue, portfolio.getPortfolioValue(timestamp)));
         return portfolio;
     }
 
-    private void rebalanceToTarget(Portfolio portfolio, Long timestamp, BigDecimal currentRiskValue, BigDecimal targetRiskValue, String safeSymbol, String riskSymbol) {
-        BigDecimal amountToBuy = targetRiskValue.subtract(currentRiskValue);
-        BigDecimal safeSymbolPrice = BigDecimal.valueOf(stockDataService.getStockPriceAtTime(safeSymbol, timestamp).getClose());
-        BigDecimal riskSymbolPrice = BigDecimal.valueOf(stockDataService.getStockPriceAtTime(riskSymbol, timestamp).getClose());
 
-        BigDecimal safeSymbolQuantityToSell = amountToBuy.divide(safeSymbolPrice, 2, BigDecimal.ROUND_DOWN);
-        portfolio.sell(safeSymbol, safeSymbolPrice, safeSymbolQuantityToSell, timestamp);
-        portfolio.buy(riskSymbol, riskSymbolPrice, amountToBuy.divide(riskSymbolPrice, 2, BigDecimal.ROUND_DOWN));
-    }
 
     @Override
     public Set<String> getSymbols() {
