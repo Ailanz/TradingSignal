@@ -9,11 +9,14 @@ import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.service.StrategyExecutorService;
 import org.tradingsignal.stock.StockData;
 import org.tradingsignal.strategy.BackTestResult;
-import org.tradingsignal.strategy.Condition;
+import org.tradingsignal.strategy.action.SigAction;
+import org.tradingsignal.strategy.condition.Condition;
 import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
 import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.action.RebalancePortfolioAction;
+import org.tradingsignal.strategy.condition.PeriodicTimeCondition;
+import org.tradingsignal.strategy.indicator.PeriodicTimeIndicator;
 import org.tradingsignal.strategy.indicator.SimpleMovingAverageIndicator;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 import org.tradingsignal.util.DateCalc;
@@ -57,21 +60,12 @@ public class BackTestController {
                         new SubStrategy(
                                 SubStrategy.Operation.AND,
                                 List.of(
-                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new SimpleMovingAverageIndicator(200), mvgAvgStock, Condition.ValueType.CURRENT_PRICE)
+//                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new PeriodicTimeIndicator(30), mvgAvgStock, Condition.ValueType.CURRENT_TIMESTAMP)
+                                        new PeriodicTimeCondition(30)
 //                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new ExponentialMovingAverageIndicator(200, smoothing), mvgAvgStock, Condition.ValueType.CURRENT_PRICE)
                                 ),
-                                new RebalancePortfolioAction().addWeight(leverageSymbol, BigDecimal.valueOf(100d))
-                        ),
-                        new SubStrategy(
-                                SubStrategy.Operation.AND,
-                                List.of(
-                                        new Condition(Condition.ConditionType.LESS, new SimpleMovingAverageIndicator(200), mvgAvgStock, Condition.ValueType.CURRENT_PRICE)
-//                                        new Condition(Condition.ConditionType.LESS, new ExponentialMovingAverageIndicator(200, smoothing), mvgAvgStock, Condition.ValueType.CURRENT_PRICE)
-                                ),
-//                                new RebalancePortfolioAction().addWeight(Asset.CASH, BigDecimal.valueOf(100d))
 //                                new RebalancePortfolioAction().addWeight(leverageSymbol, BigDecimal.valueOf(100d))
-                                new RebalancePortfolioAction().addWeight(symbol, BigDecimal.valueOf(100d))
-//                                new RebalancePortfolioAction().addWeight("SPY", BigDecimal.valueOf(100d))
+                                new SigAction(0.09, leverageSymbol, symbol)
                         )
                         , SubStrategy.DIVIDEND_PAYMENT
                 ))

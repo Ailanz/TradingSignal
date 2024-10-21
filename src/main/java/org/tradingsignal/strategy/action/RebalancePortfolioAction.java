@@ -36,9 +36,10 @@ public class RebalancePortfolioAction implements StrategyAction {
     @Override
     public Portfolio execute(Portfolio portfolio, Long timestamp, ActionLog actionLog) {
         // Check total weight equals 100
-        if (!validateWeights()) {
+         if (!validateWeights()) {
             throw new RuntimeException("Total weight must be 100");
         }
+        actionLog.addAction(timestamp,"Triggered rebalancing action");
 
         // Calculate current weights
         BigDecimal totalPortfolioValue = portfolio.getPortfolioValue(timestamp);

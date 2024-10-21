@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.tradingsignal.strategy.action.DividendPaymentAction;
 import org.tradingsignal.strategy.action.StrategyAction;
+import org.tradingsignal.strategy.condition.Condition;
 
 import java.util.List;
 

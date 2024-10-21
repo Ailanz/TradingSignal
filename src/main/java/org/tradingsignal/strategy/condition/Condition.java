@@ -1,6 +1,7 @@
-package org.tradingsignal.strategy;
+package org.tradingsignal.strategy.condition;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.tradingsignal.pojo.yahoo.StockPrice;
 import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.stock.DatePrice;
@@ -13,16 +14,20 @@ import java.util.Comparator;
 import java.util.List;
 
 @Data
+@NoArgsConstructor
 public class Condition {
+
     public enum ConditionType {
         GREATER,
         LESS,
         GREATER_OR_EQUAL,
         LESS_OR_EQUAL,
+        NONE,
     }
 
     public enum ValueType {
         CURRENT_PRICE,
+        CURRENT_TIMESTAMP,
         CUSTOM_VALUE
     }
 
@@ -92,6 +97,9 @@ public class Condition {
     public double getValue(Long timestamp) {
         if (this.valueType == ValueType.CUSTOM_VALUE) {
             return this.value;
+        }
+        if (this.valueType == ValueType.CURRENT_TIMESTAMP) {
+            return timestamp;
         }
         if (this.valueType == ValueType.CURRENT_PRICE) {
             DatePrice datePrice = StockDataService.findDatePrice(timestamp, this.stockData);

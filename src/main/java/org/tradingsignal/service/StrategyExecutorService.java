@@ -5,11 +5,10 @@ import org.springframework.stereotype.Service;
 import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockData;
 import org.tradingsignal.strategy.BackTestResult;
-import org.tradingsignal.strategy.Condition;
+import org.tradingsignal.strategy.condition.Condition;
 import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
 import org.tradingsignal.strategy.action.ActionLog;
-import org.tradingsignal.strategy.action.StrategyAction;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 
 import java.util.LinkedList;
@@ -36,7 +35,9 @@ public class StrategyExecutorService {
         for (SubStrategy subStrategy : strategy.getSubStrategies()) {
             for (Condition condition : subStrategy.getConditions()) {
                 String symbol = condition.getSymbol();
-                allTimestamps = getIntersectTimeStamps(symbol, allTimestamps);
+                if (symbol != null) {
+                    allTimestamps = getIntersectTimeStamps(symbol, allTimestamps);
+                }
             }
 
             for (String symbol : subStrategy.getAction().getSymbols()) {
@@ -70,7 +71,7 @@ public class StrategyExecutorService {
                 }
 
                 if (allConditionsMet) {
-                    subStrategy.getAction().execute(portfolio, timestamp, actionLog);
+                     subStrategy.getAction().execute(portfolio, timestamp, actionLog);
                 }
             }
             backTestResult.addPortfolioValue(timestamp, portfolio.getPortfolioValue(timestamp));
