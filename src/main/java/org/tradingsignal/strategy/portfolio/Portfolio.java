@@ -1,15 +1,12 @@
 package org.tradingsignal.strategy.portfolio;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.tradingsignal.service.StockDataService;
-import org.tradingsignal.util.Utils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Data

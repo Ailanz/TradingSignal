@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.stock.StockConfigBuilder;
 import org.tradingsignal.stock.StockData;
 import org.tradingsignal.util.DateCalc;
-import org.tradingsignal.service.StockDataService;
 
 import java.io.IOException;
 

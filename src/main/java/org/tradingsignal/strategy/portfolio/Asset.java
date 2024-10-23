@@ -1,14 +1,11 @@
 package org.tradingsignal.strategy.portfolio;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockData;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 public class Asset {

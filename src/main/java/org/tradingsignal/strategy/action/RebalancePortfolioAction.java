@@ -1,16 +1,12 @@
 package org.tradingsignal.strategy.action;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.tradingsignal.service.StockDataService;
-import org.tradingsignal.stock.StockData;
+import org.tradingsignal.strategy.PerformanceMetaData;
 import org.tradingsignal.strategy.portfolio.Asset;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 import org.tradingsignal.util.Utils;
 
-import javax.swing.*;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,12 +30,12 @@ public class RebalancePortfolioAction implements StrategyAction {
     }
 
     @Override
-    public Portfolio execute(Portfolio portfolio, Long timestamp, ActionLog actionLog) {
+    public Portfolio execute(Portfolio portfolio, Long timestamp, PerformanceMetaData performanceMetaData) {
         // Check total weight equals 100
          if (!validateWeights()) {
             throw new RuntimeException("Total weight must be 100");
         }
-        actionLog.addAction(timestamp,"Triggered rebalancing action");
+        performanceMetaData.getActionLog().addAction(timestamp,"Triggered rebalancing action");
 
         // Calculate current weights
         BigDecimal totalPortfolioValue = portfolio.getPortfolioValue(timestamp);
@@ -79,7 +75,7 @@ public class RebalancePortfolioAction implements StrategyAction {
             portfolio.buy(symbol, currentSharePrice, numShares);
         }
 
-        actionLog.addAction(timestamp,String.format("Rebalanced value %s to weights %s", Utils.roundDownToTwoDecimals(portfolio.getPortfolioValue(timestamp).doubleValue()), targetWeights.toString()));
+        performanceMetaData.getActionLog().addAction(timestamp,String.format("Rebalanced value %s to weights %s", Utils.roundDownToTwoDecimals(portfolio.getPortfolioValue(timestamp).doubleValue()), targetWeights.toString()));
 
         if (totalPortfolioValue.doubleValue() != portfolio.getPortfolioValue(timestamp).doubleValue()) {
             throw new RuntimeException("Portfolio value mismatch");

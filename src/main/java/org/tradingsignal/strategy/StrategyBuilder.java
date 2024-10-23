@@ -2,9 +2,6 @@ package org.tradingsignal.strategy;
 
 import lombok.Builder;
 import lombok.Data;
-import org.tradingsignal.strategy.action.ActionLog;
-import org.tradingsignal.strategy.action.DividendPaymentAction;
-import org.tradingsignal.strategy.action.StrategyAction;
 
 import java.util.List;
 
@@ -21,7 +18,6 @@ public class StrategyBuilder {
     private String lastModifiedBy;
     private Long lastModifiedDate;
     private int version;
-    private ActionLog actionLog;
 
 
     public StrategyBuilder build() {
@@ -30,11 +26,6 @@ public class StrategyBuilder {
             this.createdDate = System.currentTimeMillis();
         }
 
-        if (this.actionLog == null) {
-            this.actionLog = new ActionLog();
-        }
-
-        //Always Create Dividend Action
         this.lastModifiedDate = System.currentTimeMillis();
         return this;
     }

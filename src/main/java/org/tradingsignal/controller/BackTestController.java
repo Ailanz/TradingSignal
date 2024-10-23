@@ -9,16 +9,14 @@ import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.service.StrategyExecutorService;
 import org.tradingsignal.stock.StockData;
 import org.tradingsignal.strategy.BackTestResult;
-import org.tradingsignal.strategy.action.SigAction;
-import org.tradingsignal.strategy.condition.Condition;
 import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
 import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.action.RebalancePortfolioAction;
+import org.tradingsignal.strategy.action.SigAction;
+import org.tradingsignal.strategy.condition.Condition;
 import org.tradingsignal.strategy.condition.PeriodicTimeCondition;
-import org.tradingsignal.strategy.indicator.PeriodicTimeIndicator;
 import org.tradingsignal.strategy.indicator.SimpleMovingAverageIndicator;
-import org.tradingsignal.strategy.portfolio.Asset;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 import org.tradingsignal.util.DateCalc;
 import org.tradingsignal.util.Utils;
@@ -42,21 +40,20 @@ public class BackTestController {
 
     @GetMapping("/test")
     public List<String> test() {
-        ActionLog actionLog = new ActionLog();
 
         double initialCash = 10000;
         Portfolio portfolio = new Portfolio(initialCash);
 
-        int daysToBackTest = 366 * 10;
+        int daysToBackTest = 366 * 1;
         String leverageSymbol = "TQQQ";
-        String symbol = Asset.CASH;
-        StockData mvgAvgStock = stockDataService.getStockPrice("QQQ");
-        double smoothing = 2;
+        String symbol = "SVOL";
+//        String symbol = Asset.CASH;
+//        StockData mvgAvgStock = stockDataService.getStockPrice("QQQ");
+//        double smoothing = 2;
 
         StrategyBuilder strategyBuilder = StrategyBuilder.builder()
                 .name("Simple Moving Average")
                 .description("Buy when the short-term moving average crosses above the long-term moving average")
-                .actionLog(actionLog)
                 .subStrategies(List.of(
                         new SubStrategy(
                                 SubStrategy.Operation.AND,
@@ -66,7 +63,7 @@ public class BackTestController {
 //                                        new Condition(Condition.ConditionType.GREATER_OR_EQUAL, new ExponentialMovingAverageIndicator(200, smoothing), mvgAvgStock, Condition.ValueType.CURRENT_PRICE)
                                 ),
 //                                new RebalancePortfolioAction().addWeight(leverageSymbol, BigDecimal.valueOf(100d))
-                                new SigAction(0.06, leverageSymbol, symbol)
+                                new SigAction(0.09, leverageSymbol, symbol, 70)
                         )
                         , SubStrategy.DIVIDEND_PAYMENT
                 ))
@@ -76,7 +73,8 @@ public class BackTestController {
         BigDecimal finalPortfolioValue = portfolio.getPortfolioValue(DateCalc.now());
         //P&L %
         BigDecimal pnl = finalPortfolioValue.divide(BigDecimal.valueOf(initialCash), new MathContext(4, RoundingMode.HALF_UP));
-        actionLog.addAction(DateCalc.now(), "Final portfolio value: " + finalPortfolioValue +
+        ActionLog actionLog = backTestResult.getPerformanceMetaData().getActionLog();
+        actionLog.addAction(DateCalc.now(), "Final portfolio value: " + ActionLog.round(finalPortfolioValue) +
                 " P&L: " + Utils.roundDownToTwoDecimals(pnl.doubleValue() * 100 - 100) + "%");
         return actionLog.getActionLog().stream().map(action -> DateCalc.toDateString(action.getKey()) + " : " + action.getValue()).toList();
     }
@@ -93,7 +91,6 @@ public class BackTestController {
         StrategyBuilder strategyBuilder = StrategyBuilder.builder()
                 .name("Simple Moving Average")
                 .description("Buy when the short-term moving average crosses above the long-term moving average")
-                .actionLog(actionLog)
                 .subStrategies(List.of(
                         new SubStrategy(
                                 SubStrategy.Operation.AND,
@@ -123,7 +120,6 @@ public class BackTestController {
     @GetMapping("/spy")
 
     public List<String> allSPY() {
-        ActionLog actionLog = new ActionLog();
 
         Portfolio portfolio = new Portfolio(10000);
 
@@ -132,7 +128,6 @@ public class BackTestController {
         StrategyBuilder strategyBuilder = StrategyBuilder.builder()
                 .name("Simple Moving Average")
                 .description("Buy when the short-term moving average crosses above the long-term moving average")
-                .actionLog(actionLog)
                 .subStrategies(List.of(
                         new SubStrategy(
                                 SubStrategy.Operation.AND,
@@ -143,7 +138,8 @@ public class BackTestController {
                         )))
                 .build().build();
 
-        strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(5), DateCalc.now());
+        BackTestResult backTestResult = strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(5), DateCalc.now());
+        ActionLog actionLog = backTestResult.getPerformanceMetaData().getActionLog();
         actionLog.addAction(DateCalc.now(), "Final portfolio value: " + portfolio.getPortfolioValue(DateCalc.now()));
         return actionLog.getActionLog().stream().map(action -> DateCalc.toDateString(action.getKey()) + " : " + action.getValue()).toList();
     }

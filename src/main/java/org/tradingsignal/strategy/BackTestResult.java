@@ -8,7 +8,8 @@ import org.tradingsignal.strategy.portfolio.Portfolio;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 @Data
 public class BackTestResult {
@@ -19,12 +20,14 @@ public class BackTestResult {
     Portfolio finalPortfolio;
 
     BigDecimal initialValue;
+    PerformanceMetaData performanceMetaData;
 
-    public BackTestResult(Portfolio portfolio) {
+    public BackTestResult(Portfolio portfolio, PerformanceMetaData performanceMetaData) {
         this.finalPortfolio = portfolio;
         this.portfolioValues = new LinkedList<>();
         this.stockPerformances = new LinkedList<>();
         this.portfolioValuesPct = new LinkedList<>();
+        this.performanceMetaData = performanceMetaData;
     }
 
     public void addPortfolioValue(Long timestamp, BigDecimal value) {

@@ -2,7 +2,6 @@ package org.tradingsignal.strategy.condition;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.tradingsignal.pojo.yahoo.StockPrice;
 import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockData;
@@ -10,7 +9,6 @@ import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.indicator.TechnicalIndicator;
 
 import java.util.AbstractMap;
-import java.util.Comparator;
 import java.util.List;
 
 @Data

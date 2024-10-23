@@ -5,10 +5,11 @@ import org.springframework.stereotype.Service;
 import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockData;
 import org.tradingsignal.strategy.BackTestResult;
-import org.tradingsignal.strategy.condition.Condition;
+import org.tradingsignal.strategy.PerformanceMetaData;
 import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
 import org.tradingsignal.strategy.action.ActionLog;
+import org.tradingsignal.strategy.condition.Condition;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 
 import java.util.LinkedList;
@@ -21,15 +22,10 @@ public class StrategyExecutorService {
     private StockDataService stockDataService;
 
     public BackTestResult executeStrategy(StrategyBuilder strategy, Portfolio portfolio, Long fromTimestamp, Long toTimestamp) {
-        BackTestResult backTestResult = new BackTestResult(portfolio);
-        ActionLog actionLog = strategy.getActionLog();
-        if (strategy == null) {
-            throw new IllegalArgumentException("Strategy cannot be null");
-        }
-        if (portfolio == null) {
-            throw new IllegalArgumentException("Portfolio cannot be null");
-        }
-        //TODO: ERROR timestamp may not match up
+        PerformanceMetaData performanceMetaData = new PerformanceMetaData(portfolio, portfolio.getPortfolioValue(fromTimestamp), fromTimestamp, toTimestamp);
+        BackTestResult backTestResult = new BackTestResult(portfolio, performanceMetaData);
+        ActionLog actionLog = performanceMetaData.getActionLog();
+
         List<Long> allTimestamps = new LinkedList<>();
 
         for (SubStrategy subStrategy : strategy.getSubStrategies()) {
@@ -47,6 +43,7 @@ public class StrategyExecutorService {
 
         //De Duplication
         allTimestamps = allTimestamps.stream().distinct().sorted().toList();
+        performanceMetaData.setTimestamps(allTimestamps);
 
         //Run Strategy
         for (Long timestamp : allTimestamps) {
@@ -71,7 +68,7 @@ public class StrategyExecutorService {
                 }
 
                 if (allConditionsMet) {
-                     subStrategy.getAction().execute(portfolio, timestamp, actionLog);
+                     subStrategy.getAction().execute(portfolio, timestamp, performanceMetaData);
                 }
             }
             backTestResult.addPortfolioValue(timestamp, portfolio.getPortfolioValue(timestamp));

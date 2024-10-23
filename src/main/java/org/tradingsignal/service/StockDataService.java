@@ -3,13 +3,12 @@ package org.tradingsignal.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.tradingsignal.pojo.yahoo.StockPrice;
 import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockConfigBuilder;
 import org.tradingsignal.stock.StockData;
-import org.tradingsignal.pojo.yahoo.StockPrice;
 import org.tradingsignal.strategy.portfolio.Asset;
 import org.tradingsignal.util.DateCalc;
 
