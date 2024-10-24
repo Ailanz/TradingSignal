@@ -22,7 +22,7 @@ public class StrategyExecutorService {
     private StockDataService stockDataService;
 
     public BackTestResult executeStrategy(StrategyBuilder strategy, Portfolio portfolio, Long fromTimestamp, Long toTimestamp) {
-        PerformanceMetaData performanceMetaData = new PerformanceMetaData(portfolio, portfolio.getPortfolioValue(fromTimestamp), fromTimestamp, toTimestamp);
+        PerformanceMetaData performanceMetaData = new PerformanceMetaData(portfolio, portfolio.getPortfolioValue(fromTimestamp));
         BackTestResult backTestResult = new BackTestResult(portfolio, performanceMetaData);
         ActionLog actionLog = performanceMetaData.getActionLog();
 
@@ -42,15 +42,13 @@ public class StrategyExecutorService {
         }
 
         //De Duplication
-        allTimestamps = allTimestamps.stream().distinct().sorted().toList();
+        allTimestamps = allTimestamps.stream().distinct().sorted().filter(s -> s > fromTimestamp && s < toTimestamp).toList();
         performanceMetaData.setTimestamps(allTimestamps);
+        performanceMetaData.setStartDate(allTimestamps.getFirst());
+        performanceMetaData.setEndDate(allTimestamps.getLast());
 
         //Run Strategy
         for (Long timestamp : allTimestamps) {
-            if (timestamp < fromTimestamp || timestamp > toTimestamp) {
-                continue;
-            }
-
             for (SubStrategy subStrategy : strategy.getSubStrategies()) {
                 boolean allConditionsMet = true;
                 for (Condition condition : subStrategy.getConditions()) {

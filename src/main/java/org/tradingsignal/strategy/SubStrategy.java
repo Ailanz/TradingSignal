@@ -15,8 +15,6 @@ public class SubStrategy {
         AND, OR, ALWAYS_TRUE
     }
 
-    public static final SubStrategy DIVIDEND_PAYMENT = new SubStrategy(SubStrategy.Operation.ALWAYS_TRUE, List.of(), new DividendPaymentAction());
-
     private Operation operation;
     private List<Condition> conditions;
     private StrategyAction action;

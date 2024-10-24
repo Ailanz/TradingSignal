@@ -12,6 +12,7 @@ import org.tradingsignal.strategy.BackTestResult;
 import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
 import org.tradingsignal.strategy.action.ActionLog;
+import org.tradingsignal.strategy.action.DividendPaymentAction;
 import org.tradingsignal.strategy.action.RebalancePortfolioAction;
 import org.tradingsignal.strategy.action.SigAction;
 import org.tradingsignal.strategy.condition.Condition;
@@ -65,7 +66,7 @@ public class BackTestController {
 //                                new RebalancePortfolioAction().addWeight(leverageSymbol, BigDecimal.valueOf(100d))
                                 new SigAction(0.09, leverageSymbol, symbol, 70)
                         )
-                        , SubStrategy.DIVIDEND_PAYMENT
+                        , new SubStrategy(SubStrategy.Operation.ALWAYS_TRUE, List.of(), new DividendPaymentAction())
                 ))
                 .build().build();
 
@@ -106,7 +107,7 @@ public class BackTestController {
                                 ),
                                 new RebalancePortfolioAction().addWeight(symbolRiskOff, BigDecimal.valueOf(100d))
                         )
-                        , SubStrategy.DIVIDEND_PAYMENT
+                        , new SubStrategy(SubStrategy.Operation.ALWAYS_TRUE, List.of(), new DividendPaymentAction())
                 ))
                 .build().build();
 

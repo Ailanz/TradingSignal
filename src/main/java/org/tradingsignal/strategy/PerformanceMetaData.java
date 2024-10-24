@@ -2,6 +2,7 @@ package org.tradingsignal.strategy;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.portfolio.Portfolio;
@@ -18,22 +19,23 @@ public class PerformanceMetaData {
     private long endDate;
     private ActionLog actionLog;
     private Map<String, Double> dividends;
+    private List<CompareSymbol> compareSymbols;
 
     @JsonIgnore
     private List<Long> timestamps = new ArrayList<>();
 
-    public PerformanceMetaData(Portfolio portfolio, BigDecimal initialValue, long startDate, long endDate) {
+    public PerformanceMetaData(Portfolio portfolio, BigDecimal initialValue) {
         this.portfolio = portfolio;
-        this.startDate = startDate;
-        this.endDate = endDate;
         this.initialValue = initialValue;
         this.actionLog = new ActionLog();
         this.dividends = new HashMap<>();
+        this.compareSymbols = new ArrayList<>();
     }
 
     @JsonProperty("finalPortfolioValue")
     public BigDecimal getFinalPortfolioValue() {
-        return ActionLog.round(portfolio.getPortfolioValue(endDate));
+        BigDecimal value = portfolio.getPortfolioValue(endDate);
+        return ActionLog.round(value);
     }
 
     @JsonProperty("startDate")
@@ -52,7 +54,7 @@ public class PerformanceMetaData {
                 portfolio
                         .getPortfolioValue(this.endDate)
                         .subtract(this.initialValue)
-                        .divide(this.initialValue)
+                        .divide(this.initialValue, 4, BigDecimal.ROUND_HALF_UP)
                         .multiply(BigDecimal.valueOf(100))
         ).doubleValue();
     }
@@ -61,4 +63,15 @@ public class PerformanceMetaData {
     public List<AbstractMap.SimpleEntry<Long, String>>  getActionLogs() {
         return actionLog.getActionLog();
     }
+}
+
+@Data
+@AllArgsConstructor
+class CompareSymbol {
+    private String symbol;
+    private String startDate;
+    private double initialPrice;
+    private String endDate;
+    private double finalPrice;
+    private double pnlPct;
 }

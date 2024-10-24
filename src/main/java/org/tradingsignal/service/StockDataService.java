@@ -14,6 +14,7 @@ import org.tradingsignal.util.DateCalc;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 @Log4j2
@@ -23,14 +24,24 @@ public class StockDataService {
     private static final HashMap<String, StockData> stockDataCache = new HashMap<>();
 
     public StockData getStockPrice(String symbol) {
-        return getStockPrice(
+        StockData stockData = getStockPrice(
                 StockConfigBuilder.builder()
-                        .symbol(symbol)
+                        .symbol(symbol.equals(Asset.CASH) ? "SPY" : symbol)
                         .fromPeriod(0L)
                         .toPeriod(DateCalc.now())
                         .interval(StockConfigBuilder.Interval.ONE_DAY)
                         .build()
         );
+        if(symbol.equals(Asset.CASH)) {
+            StockData cashData = new StockData();
+            cashData.setSymbol(Asset.CASH);
+            cashData.setDatePrices(new LinkedList<>());
+            for(DatePrice datePrice : stockData.getDatePrices()) {
+                cashData.getDatePrices().add(new DatePrice(datePrice.getTimestamp(), 1d, 1d, 1d, 1d));
+            }
+            return cashData;
+        }
+        return stockData;
     }
 
     public StockData getStockPrice(StockConfigBuilder builder) {
@@ -68,9 +79,9 @@ public class StockDataService {
         List<DatePrice> datePrices = stockData.getDatePrices();
         DatePrice result = null;
         for (DatePrice datePrice : datePrices) {
-           if (datePrice.getTimestamp() <= timestamp) {
-               result = datePrice;
-           }
+            if (datePrice.getTimestamp() <= timestamp) {
+                result = datePrice;
+            }
         }
         if (result == null) {
             throw new IllegalArgumentException("No data available for timestamp " + timestamp);

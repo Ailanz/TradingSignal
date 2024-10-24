@@ -51,7 +51,7 @@ public class Portfolio {
         if (assets.get(Asset.CASH).getQuantity().doubleValue() < totalValue.doubleValue()) {
 //            throw new IllegalArgumentException("Not enough cash to buy " + quantity + " of " + symbol);
             //Buy as much as we can
-            quantity = assets.get(Asset.CASH).getQuantity().divide(price, 2, RoundingMode.HALF_UP);
+            quantity = assets.get(Asset.CASH).getQuantity().divide(price, 4, RoundingMode.HALF_DOWN);
             totalValue = price.multiply(quantity);
         }
         assets.get(symbol.toUpperCase()).setQuantity(assets.get(symbol.toUpperCase()).getQuantity().add(quantity));
@@ -65,14 +65,14 @@ public class Portfolio {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, Asset> entry : assets.entrySet()) {
-            sb.append(entry.getKey()).append(": ").append(entry.getValue().getQuantity().round(new MathContext(5, RoundingMode.HALF_UP)).doubleValue()).append(", ");
+            sb.append(entry.getKey()).append(": ").append(entry.getValue().getQuantity().round(new MathContext(5, RoundingMode.HALF_DOWN)).doubleValue()).append(", ");
         }
         return sb.toString();
     }
 
     public void sellSymbolByDollarAmount(String symbol, BigDecimal dollarAmount, Long timestamp) {
         BigDecimal pricePerShare = BigDecimal.valueOf(stockDataService.getStockPriceAtTime(symbol, timestamp).getClose());
-        BigDecimal quantity = dollarAmount.divide(pricePerShare, 2, RoundingMode.HALF_UP);
+        BigDecimal quantity = dollarAmount.divide(pricePerShare, 4, RoundingMode.HALF_DOWN);
         //TODO: Check if we have enough quantity to sell
         if (assets.get(symbol).getQuantity().doubleValue() < quantity.doubleValue()) {
             //sell all
@@ -85,7 +85,7 @@ public class Portfolio {
 
     public void buySymbolDollarAmount(String symbol, BigDecimal dollarAmount, Long timestamp) {
         BigDecimal price = BigDecimal.valueOf(stockDataService.getStockPriceAtTime(symbol, timestamp).getClose());
-        BigDecimal quantity = dollarAmount.divide(price, 2, RoundingMode.HALF_UP);
+        BigDecimal quantity = dollarAmount.divide(price, 5, RoundingMode.HALF_DOWN);
         buy(symbol, price, quantity);
     }
 

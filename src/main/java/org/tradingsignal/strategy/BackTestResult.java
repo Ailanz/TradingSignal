@@ -5,6 +5,7 @@ import lombok.Data;
 import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockData;
 import org.tradingsignal.strategy.portfolio.Portfolio;
+import org.tradingsignal.util.DateCalc;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -46,6 +47,7 @@ public class BackTestResult {
 
         List<TimeValue> stockValuesPct = new LinkedList<>();
         BigDecimal initialValue = null;
+        DatePrice initialDatePrice = null;
         for (int i = 0; i < stockData.getDatePrices().size(); i++) {
             DatePrice currentDatePrice = stockData.getDatePrices().get(i);
             if (currentDatePrice.getTimestamp() < portfolioValues.get(0).getTimestamp()) {
@@ -53,10 +55,17 @@ public class BackTestResult {
             }
             if (initialValue == null) {
                 initialValue = BigDecimal.valueOf(stockData.getDatePrices().get(i).getClose());
+                initialDatePrice = currentDatePrice;
             }
             BigDecimal pct = BigDecimal.valueOf(currentDatePrice.getClose()).divide(initialValue, 6, RoundingMode.HALF_UP).subtract(BigDecimal.ONE).multiply(BigDecimal.valueOf(100));
             stockValuesPct.add(new TimeValue(currentDatePrice.getTimestamp(), pct.doubleValue()));
         }
+        List<DatePrice> datePrices = stockData.getDatePrices();
+
+        this.performanceMetaData.getCompareSymbols().add(new CompareSymbol(symbol, DateCalc.toDateString(initialDatePrice.getTimestamp()),
+                initialDatePrice.getClose(), DateCalc.toDateString(datePrices.getLast().getTimestamp()),
+                datePrices.getLast().getClose(),
+                stockValuesPct.getLast().getValue()));
         this.stockPerformances.add(new StockPerformance(symbol,stockValuesPct));
     }
 }

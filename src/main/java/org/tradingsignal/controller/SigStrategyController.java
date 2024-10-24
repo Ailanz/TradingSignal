@@ -10,6 +10,7 @@ import org.tradingsignal.strategy.BackTestResult;
 import org.tradingsignal.strategy.PerformanceMetaData;
 import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
+import org.tradingsignal.strategy.action.DividendPaymentAction;
 import org.tradingsignal.strategy.action.SigAction;
 import org.tradingsignal.strategy.condition.PeriodicTimeCondition;
 import org.tradingsignal.strategy.portfolio.Portfolio;
@@ -44,11 +45,13 @@ public class SigStrategyController {
                                 ),
                                 new SigAction(sig, riskSymbol, safeSymbol, riskWeight)
                         )
-                        , SubStrategy.DIVIDEND_PAYMENT
+//                        ,new SubStrategy(SubStrategy.Operation.ALWAYS_TRUE, List.of(), new DividendPaymentAction())
                 ))
                 .build().build();
 
         BackTestResult backTestResult = strategyExecutorService.executeStrategy(strategyBuilder, portfolio, startDate, endDate);
+        backTestResult.addStockValues(riskSymbol, stockDataService.getStockPrice(riskSymbol));
+        backTestResult.addStockValues(safeSymbol, stockDataService.getStockPrice(safeSymbol));
         return backTestResult.getPerformanceMetaData();
     }
 
