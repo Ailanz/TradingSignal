@@ -1,5 +1,6 @@
 package org.tradingsignal.strategy;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.tradingsignal.stock.DatePrice;
@@ -20,6 +21,7 @@ public class BackTestResult {
     List<StockPerformance> stockPerformances;
     Portfolio finalPortfolio;
 
+    @JsonIgnore
     BigDecimal initialValue;
     PerformanceMetaData performanceMetaData;
 

@@ -1,5 +1,6 @@
 package org.tradingsignal.strategy.portfolio;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.tradingsignal.service.StockDataService;
 
@@ -11,7 +12,7 @@ import java.util.Map;
 
 @Data
 public class Portfolio {
-    //TODO: DUMB THIS DOWN, REMOVE STOCKDATA SERVICE
+    @JsonIgnore
     private StockDataService stockDataService;
     private Map<String, Asset> assets;
 

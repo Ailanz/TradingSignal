@@ -42,7 +42,7 @@ public class StrategyExecutorService {
         }
 
         //De Duplication
-        allTimestamps = allTimestamps.stream().distinct().sorted().filter(s -> s > fromTimestamp && s < toTimestamp).toList();
+        allTimestamps = allTimestamps.stream().distinct().sorted().filter(s -> (s > fromTimestamp) && (s < toTimestamp)).toList();
         performanceMetaData.setTimestamps(allTimestamps);
         performanceMetaData.setStartDate(allTimestamps.getFirst());
         performanceMetaData.setEndDate(allTimestamps.getLast());
@@ -53,7 +53,7 @@ public class StrategyExecutorService {
                 boolean allConditionsMet = true;
                 for (Condition condition : subStrategy.getConditions()) {
                     boolean conditionMet = condition.isMet(timestamp, actionLog);
-                    if(subStrategy.getOperation().equals(SubStrategy.Operation.ALWAYS_TRUE)) {
+                    if (subStrategy.getOperation().equals(SubStrategy.Operation.ALWAYS_TRUE)) {
                         allConditionsMet = true;
                         break;
                     }
@@ -66,7 +66,7 @@ public class StrategyExecutorService {
                 }
 
                 if (allConditionsMet) {
-                     subStrategy.getAction().execute(portfolio, timestamp, performanceMetaData);
+                    subStrategy.getAction().execute(portfolio, timestamp, performanceMetaData);
                 }
             }
             backTestResult.addPortfolioValue(timestamp, portfolio.getPortfolioValue(timestamp));
