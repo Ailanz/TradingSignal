@@ -18,6 +18,13 @@ public class PerformanceMetaData {
     private long startDate;
     private long endDate;
     private ActionLog actionLog;
+
+    //TargetValues is used for SigAction only
+    private List<TimeValue> sigTargetValues;
+    private List<TimeValue> sigCurrentValues;
+    private List<TimeValue> sigSafeValues;
+
+
     private Map<String, Double> dividends;
     private List<CompareSymbol> compareSymbols;
 
@@ -30,6 +37,10 @@ public class PerformanceMetaData {
         this.actionLog = new ActionLog();
         this.dividends = new HashMap<>();
         this.compareSymbols = new ArrayList<>();
+
+        this.sigTargetValues = new ArrayList<>();
+        this.sigCurrentValues = new ArrayList<>();
+        this.sigSafeValues = new ArrayList<>();
     }
 
     @JsonProperty("finalPortfolioValue")

@@ -32,6 +32,9 @@ public class SigStrategyController {
 
     @GetMapping("/performance")
     public BackTestResult performance(double cash, double riskWeight, int daysAgo, int rebalanceDays, double sig, String riskSymbol, String safeSymbol) {
+        riskSymbol = riskSymbol.toUpperCase().trim();
+        safeSymbol = safeSymbol.toUpperCase().trim();
+
         Portfolio portfolio = new Portfolio(cash);
         long startDate = DateCalc.daysBefore(daysAgo);
         long endDate = DateCalc.now();

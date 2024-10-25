@@ -3,6 +3,7 @@ package org.tradingsignal.strategy.action;
 import lombok.Data;
 import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.strategy.PerformanceMetaData;
+import org.tradingsignal.strategy.TimeValue;
 import org.tradingsignal.strategy.portfolio.Asset;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 
@@ -14,7 +15,7 @@ public class SigAction implements StrategyAction {
 
     private StockDataService stockDataService;
 
-    private double increasePct = 0d;
+    private double increasePct;
     private double targetValue = 0d;
     private String riskSymbol;
     private String safeSymbol;
@@ -42,7 +43,12 @@ public class SigAction implements StrategyAction {
 
         BigDecimal startingPortfolioValue = portfolio.getPortfolioValue(timestamp);
         BigDecimal currentRiskValue = portfolio.getPortfolioValueOfSymbol(timestamp, riskSymbol);
+        BigDecimal currentSafeValue = portfolio.getPortfolioValueOfSymbol(timestamp, safeSymbol);
         BigDecimal targetRiskValue = BigDecimal.valueOf(targetValue);
+
+        performanceMetaData.getSigTargetValues().add(new TimeValue(timestamp, targetRiskValue.doubleValue()));
+        performanceMetaData.getSigCurrentValues().add(new TimeValue(timestamp, currentRiskValue.doubleValue()));
+        performanceMetaData.getSigSafeValues().add(new TimeValue(timestamp, currentSafeValue.doubleValue()));
 
         if (portfolio.getPortfolioValue(timestamp).compareTo(startingPortfolioValue) != 0) {
             throw new RuntimeException("Portfolio value changed during rebalance");
