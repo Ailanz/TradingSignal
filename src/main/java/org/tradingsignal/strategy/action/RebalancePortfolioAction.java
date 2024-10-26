@@ -77,7 +77,7 @@ public class RebalancePortfolioAction implements StrategyAction {
 
         performanceMetaData.getActionLog().addAction(timestamp,
                 ActionLog.ActionType.REBALANCE,
-                String.format("Rebalanced value %s to weights %s",
+                String.format("Rebalanced value $%s to weights %s",
                         ActionLog.round(portfolio.getPortfolioValue(timestamp)),
                         targetWeights.toString()),
                 portfolio.getPortfolioValue(timestamp));

@@ -6,7 +6,6 @@ import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.strategy.action.ActionLog;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,11 +27,9 @@ public class Portfolio {
     }
 
     public BigDecimal getPortfolioValue(Long timestamp) {
-        BigDecimal portfolioValue = BigDecimal.ZERO;
-        for (Asset asset : assets.values()) {
-            portfolioValue = portfolioValue.add(asset.getValue(stockDataService, timestamp));
-        }
-        return portfolioValue;
+        return assets.values().stream()
+                .map(asset -> asset.getValue(stockDataService, timestamp))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal getPortfolioValueOfSymbol(Long timestamp, String symbol) {
@@ -51,9 +48,7 @@ public class Portfolio {
         assets.putIfAbsent(Asset.CASH, new Asset(Asset.CASH, BigDecimal.ONE, BigDecimal.ZERO));
 
         BigDecimal totalValue = price.multiply(quantity);
-        if (assets.get(Asset.CASH).getQuantity().doubleValue() < totalValue.doubleValue()) {
-//            throw new IllegalArgumentException("Not enough cash to buy " + quantity + " of " + symbol);
-            //Buy as much as we can
+        if (assets.get(Asset.CASH).getQuantity().compareTo(totalValue) < 0) {
             quantity = assets.get(Asset.CASH).getQuantity().divide(price, 4, RoundingMode.HALF_DOWN);
             totalValue = price.multiply(quantity);
         }
@@ -65,20 +60,18 @@ public class Portfolio {
         assets.get(Asset.CASH).setQuantity(assets.get(Asset.CASH).getQuantity().add(amount));
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, Asset> entry : assets.entrySet()) {
-            sb.append(entry.getKey()).append(": ").append(entry.getValue().getQuantity().round(new MathContext(5, RoundingMode.HALF_DOWN)).doubleValue()).append(", ");
-        }
+        assets.forEach((key, value) -> sb.append(key).append(": ")
+                .append(value.getQuantity().setScale(5, RoundingMode.HALF_DOWN)).append(", "));
         return sb.toString();
     }
 
     public void sellSymbolByDollarAmount(String symbol, BigDecimal dollarAmount, Long timestamp) {
         BigDecimal pricePerShare = BigDecimal.valueOf(stockDataService.getStockPriceAtTime(symbol, timestamp).getClose());
         BigDecimal quantity = dollarAmount.divide(pricePerShare, 4, RoundingMode.HALF_DOWN);
-        //TODO: Check if we have enough quantity to sell
-        if (assets.get(symbol).getQuantity().doubleValue() < quantity.doubleValue()) {
-            //sell all
+        if (assets.get(symbol).getQuantity().compareTo(quantity) < 0) {
             sellAll(symbol, timestamp);
             return;
         }

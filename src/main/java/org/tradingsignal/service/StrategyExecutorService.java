@@ -12,6 +12,7 @@ import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.condition.Condition;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -71,7 +72,9 @@ public class StrategyExecutorService {
             }
             backTestResult.addPortfolioValue(timestamp, portfolio.getPortfolioValue(timestamp));
         }
-
+        //add final portfolio value
+        BigDecimal finalPortfolioValue = ActionLog.round(portfolio.getPortfolioValue(allTimestamps.getLast()));
+        performanceMetaData.getActionLog().addAction(allTimestamps.getLast(), ActionLog.ActionType.PORTFOLIO_VALUE, "Final portfolio value: $" + finalPortfolioValue, finalPortfolioValue);
         return backTestResult;
 
     }
