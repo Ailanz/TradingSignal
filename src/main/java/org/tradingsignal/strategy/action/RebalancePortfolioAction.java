@@ -32,10 +32,10 @@ public class RebalancePortfolioAction implements StrategyAction {
     @Override
     public Portfolio execute(Portfolio portfolio, Long timestamp, PerformanceMetaData performanceMetaData) {
         // Check total weight equals 100
-         if (!validateWeights()) {
+        if (!validateWeights()) {
             throw new RuntimeException("Total weight must be 100");
         }
-        performanceMetaData.getActionLog().addAction(timestamp,"Triggered rebalancing action");
+//        performanceMetaData.getActionLog().addAction(timestamp, ActionLog.ActionType.DIVIDEND, "Triggered rebalancing action");
 
         // Calculate current weights
         BigDecimal totalPortfolioValue = portfolio.getPortfolioValue(timestamp);
@@ -75,7 +75,12 @@ public class RebalancePortfolioAction implements StrategyAction {
             portfolio.buy(symbol, currentSharePrice, numShares);
         }
 
-        performanceMetaData.getActionLog().addAction(timestamp,String.format("Rebalanced value %s to weights %s", Utils.roundDownToTwoDecimals(portfolio.getPortfolioValue(timestamp).doubleValue()), targetWeights.toString()));
+        performanceMetaData.getActionLog().addAction(timestamp,
+                ActionLog.ActionType.REBALANCE,
+                String.format("Rebalanced value %s to weights %s",
+                        ActionLog.round(portfolio.getPortfolioValue(timestamp)),
+                        targetWeights.toString()),
+                portfolio.getPortfolioValue(timestamp));
 
         if (totalPortfolioValue.doubleValue() != portfolio.getPortfolioValue(timestamp).doubleValue()) {
             throw new RuntimeException("Portfolio value mismatch");

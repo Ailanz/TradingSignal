@@ -3,6 +3,7 @@ package org.tradingsignal.strategy.portfolio;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.tradingsignal.service.StockDataService;
+import org.tradingsignal.strategy.action.ActionLog;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -45,6 +46,7 @@ public class Portfolio {
     }
 
     public void buy(String symbol, BigDecimal price, BigDecimal quantity) {
+        quantity = ActionLog.round(quantity);
         assets.putIfAbsent(symbol.toUpperCase(), new Asset(symbol, price, BigDecimal.ZERO));
         assets.putIfAbsent(Asset.CASH, new Asset(Asset.CASH, BigDecimal.ONE, BigDecimal.ZERO));
 

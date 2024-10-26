@@ -75,9 +75,9 @@ public class BackTestController {
         //P&L %
         BigDecimal pnl = finalPortfolioValue.divide(BigDecimal.valueOf(initialCash), new MathContext(4, RoundingMode.HALF_UP));
         ActionLog actionLog = backTestResult.getPerformanceMetaData().getActionLog();
-        actionLog.addAction(DateCalc.now(), "Final portfolio value: " + ActionLog.round(finalPortfolioValue) +
+        actionLog.addAction(DateCalc.now(), ActionLog.ActionType.PORTFOLIO_VALUE, "Final portfolio value: " + ActionLog.round(finalPortfolioValue) +
                 " P&L: " + Utils.roundDownToTwoDecimals(pnl.doubleValue() * 100 - 100) + "%");
-        return actionLog.getActionLog().stream().map(action -> DateCalc.toDateString(action.getKey()) + " : " + action.getValue()).toList();
+        return actionLog.getActionLog().stream().map(action -> action.getAction() + " : " + action.getMessage()).toList();
     }
 
     @GetMapping("/run")
@@ -141,7 +141,7 @@ public class BackTestController {
 
         BackTestResult backTestResult = strategyExecutorService.executeStrategy(strategyBuilder, portfolio, DateCalc.daysBefore(5), DateCalc.now());
         ActionLog actionLog = backTestResult.getPerformanceMetaData().getActionLog();
-        actionLog.addAction(DateCalc.now(), "Final portfolio value: " + portfolio.getPortfolioValue(DateCalc.now()));
-        return actionLog.getActionLog().stream().map(action -> DateCalc.toDateString(action.getKey()) + " : " + action.getValue()).toList();
+        actionLog.addAction(DateCalc.now(), ActionLog.ActionType.PORTFOLIO_VALUE, "Final portfolio value: " + portfolio.getPortfolioValue(DateCalc.now()));
+        return actionLog.getActionLog().stream().map(action -> DateCalc.toDateString(action.getTimestamp()) + " : " + action.getMessage()).toList();
     }
 }

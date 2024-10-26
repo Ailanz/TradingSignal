@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.tradingsignal.stock.DatePrice;
 import org.tradingsignal.stock.StockData;
+import org.tradingsignal.strategy.action.ActionLog;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 import org.tradingsignal.util.DateCalc;
 
@@ -60,7 +61,7 @@ public class BackTestResult {
                 initialDatePrice = currentDatePrice;
             }
             BigDecimal pct = BigDecimal.valueOf(currentDatePrice.getClose()).divide(initialValue, 6, RoundingMode.HALF_UP).subtract(BigDecimal.ONE).multiply(BigDecimal.valueOf(100));
-            stockValuesPct.add(new TimeValue(currentDatePrice.getTimestamp(), pct.doubleValue()));
+            stockValuesPct.add(new TimeValue(currentDatePrice.getTimestamp(), ActionLog.round(pct).doubleValue()));
         }
         List<DatePrice> datePrices = stockData.getDatePrices();
 

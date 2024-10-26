@@ -2,6 +2,7 @@ package org.tradingsignal.service;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -23,8 +24,34 @@ public class StockDataService {
 
     private static final HashMap<String, StockData> stockDataCache = new HashMap<>();
 
-    public StockData getStockPrice(String symbol) {
+    private StockData cashData = null;
+
+    @PostConstruct
+    public void init() {
         StockData stockData = getStockPrice(
+                StockConfigBuilder.builder()
+                        .symbol("SPY")
+                        .fromPeriod(0L)
+                        .toPeriod(DateCalc.now())
+                        .interval(StockConfigBuilder.Interval.ONE_DAY)
+                        .build()
+        );
+        StockData cashData = new StockData();
+        cashData.setSymbol(Asset.CASH);
+        cashData.setDatePrices(new LinkedList<>());
+        for (DatePrice datePrice : stockData.getDatePrices()) {
+            cashData.getDatePrices().add(new DatePrice(datePrice.getTimestamp(), 1d, 1d, 1d, 1d));
+        }
+        this.cashData = cashData;
+    }
+
+    public StockData getStockPrice(String symbol) {
+
+        if (symbol.equals(Asset.CASH) && cashData != null) {
+            return cashData;
+        }
+
+        return getStockPrice(
                 StockConfigBuilder.builder()
                         .symbol(symbol.equals(Asset.CASH) ? "SPY" : symbol)
                         .fromPeriod(0L)
@@ -32,16 +59,6 @@ public class StockDataService {
                         .interval(StockConfigBuilder.Interval.ONE_DAY)
                         .build()
         );
-        if(symbol.equals(Asset.CASH)) {
-            StockData cashData = new StockData();
-            cashData.setSymbol(Asset.CASH);
-            cashData.setDatePrices(new LinkedList<>());
-            for(DatePrice datePrice : stockData.getDatePrices()) {
-                cashData.getDatePrices().add(new DatePrice(datePrice.getTimestamp(), 1d, 1d, 1d, 1d));
-            }
-            return cashData;
-        }
-        return stockData;
     }
 
     public StockData getStockPrice(StockConfigBuilder builder) {

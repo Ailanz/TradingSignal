@@ -77,8 +77,7 @@ public class SigAction implements StrategyAction {
         if (differenceValue.compareTo(BigDecimal.valueOf(1.0)) > 0) {
             throw new RuntimeException("Portfolio value changed during rebalance: " + differenceValue);
         }
-        sb.append(", Portfolio value: ").append(ActionLog.round(finalPortfolioValue));
-        performanceMetaData.getActionLog().addAction(timestamp, sb.toString());
+        performanceMetaData.getActionLog().addAction(timestamp, ActionLog.ActionType.SIG, sb.toString(), ActionLog.round(finalPortfolioValue));
         return portfolio;
     }
 

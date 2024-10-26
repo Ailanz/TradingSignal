@@ -9,6 +9,7 @@ import org.tradingsignal.strategy.portfolio.Asset;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 import org.tradingsignal.util.Utils;
 
+import javax.swing.*;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +49,14 @@ public class DividendPaymentAction implements StrategyAction {
                         portfolio.addCash(dividendAmount);
 
                         if (dividendAmount.doubleValue() != 0d) {
-                            performanceMetaData.getActionLog().addAction(timestamp, String.format("Dividend payment for %s of %s (%s per share, %s shares)", symbol, Utils.roundDownToTwoDecimals(dividendAmount), dividend.getValue(), entry.getValue().getQuantity()));
+                            performanceMetaData.getActionLog().addAction(
+                                    timestamp,
+                                    ActionLog.ActionType.DIVIDEND,
+                                    String.format("%s: $%s ($%s / share, %s shares)",
+                                            symbol, ActionLog.round(dividendAmount),
+                                            dividend.getValue(),
+                                            ActionLog.round(entry.getValue().getQuantity())),
+                                    portfolio.getPortfolioValue(timestamp));
                             performanceMetaData.getDividends().putIfAbsent(symbol, 0d);
                             performanceMetaData.getDividends().put(symbol, performanceMetaData.getDividends().get(symbol) + dividendAmount.doubleValue());
 

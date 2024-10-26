@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.tradingsignal.strategy.action.ActionLog;
+import org.tradingsignal.strategy.action.LogData;
 import org.tradingsignal.strategy.portfolio.Portfolio;
 import org.tradingsignal.util.DateCalc;
 
@@ -71,7 +72,7 @@ public class PerformanceMetaData {
     }
 
     @JsonProperty("actionLog")
-    public List<AbstractMap.SimpleEntry<Long, String>>  getActionLogs() {
+    public List<LogData>  getActionLogs() {
         return actionLog.getActionLog();
     }
 }
