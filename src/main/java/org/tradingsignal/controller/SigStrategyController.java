@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.service.StrategyExecutorService;
+import org.tradingsignal.stock.StockConfigBuilder;
 import org.tradingsignal.strategy.BackTestResult;
 import org.tradingsignal.strategy.PerformanceMetaData;
 import org.tradingsignal.strategy.StrategyBuilder;
@@ -54,9 +55,11 @@ public class SigStrategyController {
                 ))
                 .build().build();
 
+        StockConfigBuilder.Interval interval = daysAgo > 300 ? StockConfigBuilder.Interval.ONE_MONTH : StockConfigBuilder.Interval.ONE_DAY;
+
         BackTestResult backTestResult = strategyExecutorService.executeStrategy(strategyBuilder, portfolio, startDate, endDate);
-        backTestResult.addStockValues(riskSymbol, stockDataService.getStockPrice(riskSymbol));
-        backTestResult.addStockValues(safeSymbol, stockDataService.getStockPrice(safeSymbol));
+        backTestResult.addStockValues(riskSymbol, stockDataService.getStockPrice(riskSymbol, interval));
+        backTestResult.addStockValues(safeSymbol, stockDataService.getStockPrice(safeSymbol, interval));
         return backTestResult;
     }
 

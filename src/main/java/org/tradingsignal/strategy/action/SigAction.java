@@ -52,9 +52,9 @@ public class SigAction implements StrategyAction {
         }
 
         BigDecimal differenceRiskValue = targetRiskValue.subtract(currentRiskValue).abs();
-        StringBuilder sb = new StringBuilder("Target value: $")
+        StringBuilder sb = new StringBuilder("Target: $")
                 .append(ActionLog.round(targetRiskValue))
-                .append(" Current value: $")
+                .append(" Current: $")
                 .append(ActionLog.round(currentRiskValue));
 
         if (currentRiskValue.compareTo(targetRiskValue) < 0) {

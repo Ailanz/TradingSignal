@@ -2,7 +2,7 @@ package org.tradingsignal.util;
 
 public class DateCalc {
     public static long daysBefore(int days) {
-        return (System.currentTimeMillis()/1000) - (long) days * 24 * 60 * 60;
+        return ((System.currentTimeMillis()/1000) - (long) days * 24 * 60 * 60) - 1;
     }
 
     public static long daysAfter(Long now, int days) {

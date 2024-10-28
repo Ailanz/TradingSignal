@@ -46,6 +46,10 @@ public class StockDataService {
     }
 
     public StockData getStockPrice(String symbol) {
+        return getStockPrice(symbol, StockConfigBuilder.Interval.ONE_DAY);
+    }
+
+    public StockData getStockPrice(String symbol, StockConfigBuilder.Interval interval) {
 
         if (symbol.equals(Asset.CASH) && cashData != null) {
             return cashData;
@@ -56,7 +60,7 @@ public class StockDataService {
                         .symbol(symbol.equals(Asset.CASH) ? "SPY" : symbol)
                         .fromPeriod(0L)
                         .toPeriod(DateCalc.now())
-                        .interval(StockConfigBuilder.Interval.ONE_DAY)
+                        .interval(interval)
                         .build()
         );
     }
@@ -100,7 +104,7 @@ public class StockDataService {
                 result = datePrice;
             }
         }
-        if (result == null) {
+        if (result == null || result.getClose() == 0) {
             throw new IllegalArgumentException("No data available for timestamp " + timestamp);
         }
         return result;

@@ -16,6 +16,7 @@ import java.util.List;
 
 @Data
 public class BackTestResult {
+    @JsonIgnore
     List<TimeValue> portfolioValues;
     List<TimeValue> portfolioValuesPct;
     // used for performance comparison
