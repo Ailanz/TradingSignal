@@ -9,7 +9,6 @@ import org.tradingsignal.service.StockDataService;
 import org.tradingsignal.service.StrategyExecutorService;
 import org.tradingsignal.stock.StockConfigBuilder;
 import org.tradingsignal.strategy.BackTestResult;
-import org.tradingsignal.strategy.PerformanceMetaData;
 import org.tradingsignal.strategy.StrategyBuilder;
 import org.tradingsignal.strategy.SubStrategy;
 import org.tradingsignal.strategy.action.DividendPaymentAction;
@@ -60,6 +59,8 @@ public class SigStrategyController {
         BackTestResult backTestResult = strategyExecutorService.executeStrategy(strategyBuilder, portfolio, startDate, endDate);
         backTestResult.addStockValues(riskSymbol, stockDataService.getStockPrice(riskSymbol, interval));
         backTestResult.addStockValues(safeSymbol, stockDataService.getStockPrice(safeSymbol, interval));
+
+        backTestResult.sparsePortfolioData(5);
         return backTestResult;
     }
 

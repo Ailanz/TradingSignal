@@ -76,7 +76,6 @@ public class StrategyExecutorService {
         BigDecimal finalPortfolioValue = ActionLog.round(portfolio.getPortfolioValue(allTimestamps.getLast()));
         performanceMetaData.getActionLog().addAction(allTimestamps.getLast(), ActionLog.ActionType.PORTFOLIO_VALUE, "Final portfolio value: $" + finalPortfolioValue, finalPortfolioValue);
         return backTestResult;
-
     }
 
     private List<Long> getIntersectTimeStamps(String symbol, List<Long> allTimestamps) {

@@ -72,6 +72,21 @@ public class BackTestResult {
                 stockValuesPct.getLast().getValue()));
         this.stockPerformances.add(new StockPerformance(symbol,stockValuesPct));
     }
+
+    public void sparsePortfolioData(int sparseData) {
+        // sparse data on portfolio value and pct
+        List<TimeValue> portfolioValues = new LinkedList<>();
+        List<TimeValue> portfolioValuesPct = new LinkedList<>();
+        for (int i = 0; i < this.portfolioValues.size(); i++) {
+            if (i % sparseData == 0 || i == this.portfolioValues.size() - 1) {
+                portfolioValues.add(this.portfolioValues.get(i));
+                portfolioValuesPct.add(this.portfolioValuesPct.get(i));
+            }
+        }
+        this.portfolioValues = portfolioValues;
+        this.portfolioValuesPct = portfolioValuesPct;
+
+    }
 }
 @Data
 @AllArgsConstructor
